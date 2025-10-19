@@ -2,9 +2,19 @@
 
 ## Addressing Modes
 
-This is a list of the addressing modes that I have completed, and the ones that I have left to complete.
+This is a list of the addressing modes that I have completed, and the ones that
+I have left to complete.
 
-- [ ] Accumulator
+- [x] Implicit (represented as `None`)
+- [x] Accumulator
+
+For the accumulator addressing mode, because the fetch functions do not
+explicitly take a `byte`, but an `int` (Python has no `byte` type), I created a
+special memory address outside of the normal addressing range so that nothing
+can interfere with it: `-0xacc`. This address will be returned by
+`addr_accumulator` and when fetched or written to by the cpu, the accumulator
+itself will be accessed.
+
 - [x] Immediate
 - [x] Zero Page
 - [x] Zero Page,X
@@ -13,7 +23,7 @@ This is a list of the addressing modes that I have completed, and the ones that 
 - [x] Absolute
 - [x] Absolute,X
 - [x] Absolute,Y
-- [ ] Indirect
+- [x] Indirect
 - [x] Indexed Indirect
 - [x] Indirect Indexed
 
@@ -45,10 +55,10 @@ This is a list of the instructions that I have completed, and the ones that I ha
 - [ ] DEX
 - [ ] DEY
 - [ ] EOR
-- [ ] INC
-- [ ] INX
-- [ ] INY
-- [ ] JMP
+- [x] INC
+- [x] INX
+- [x] INY
+- [x] JMP
 - [ ] JSR
 - [x] LDA
 - [x] LDX
@@ -68,9 +78,9 @@ This is a list of the instructions that I have completed, and the ones that I ha
 - [ ] SEC
 - [ ] SED
 - [ ] SEI
-- [ ] STA
-- [ ] STX
-- [ ] STY
+- [x] STA
+- [x] STX
+- [x] STY
 - [ ] TAX
 - [ ] TAY
 - [ ] TSX

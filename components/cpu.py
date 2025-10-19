@@ -5,12 +5,16 @@ from time import sleep
 from components.mm_component import MemoryMappedComponent
 
 MAX_ADDR = 65535
+ACC_ADDR = -0xacc
 
 def build_word(high: int, low: int) -> int:
     return (high << 8) | low
 
 def get_bit(value, bit):
     return bool(value & (1 << bit))
+
+def parse_twos_complement(val: int) -> int:
+    return val - 0x100 if val & 0x80 else val
 
 class Isa:
     def __init__(self, cpu: "Cpu") -> None:
@@ -38,12 +42,50 @@ class Isa:
             0xb4: (self.ldy, self.addr_zero_page_x),
             0xac: (self.ldy, self.addr_absolute),
             0xbc: (self.ldy, self.addr_absolute_x),
+            
+            0x85: (self.sta, self.addr_zero_page),
+            0x95: (self.sta, self.addr_zero_page_x),
+            0x8d: (self.sta, self.addr_absolute),
+            0x9d: (self.sta, self.addr_absolute_x),
+            0x99: (self.sta, self.addr_absolute_y),
+            0x81: (self.sta, self.addr_indexed_indirect),
+            0x91: (self.sta, self.addr_indirect_indexed),
+            
+            0x86: (self.stx, self.addr_zero_page),
+            0x96: (self.stx, self.addr_zero_page_y),
+            0x8e: (self.stx, self.addr_absolute),
+            
+            0x84: (self.sty, self.addr_zero_page),
+            0x94: (self.sty, self.addr_zero_page_x),
+            0x8c: (self.sty, self.addr_absolute),
+            
+            0x4c: (self.jmp, self.addr_absolute),
+            0x6c: (self.jmp, self.addr_indirect),
+            
+            0xf0: (self.beq, self.addr_relative),
+            
+            0xe6: (self.inc, self.addr_zero_page),
+            0xf6: (self.inc, self.addr_zero_page_x),
+            0xee: (self.inc, self.addr_absolute),
+            0xfe: (self.inc, self.addr_absolute_x),
+            
+            0xe8: (self.inx, None),
+            
+            0xc8: (self.iny, None),
         }
         
     def addr_immediate(self) -> int:
         addr = self.cpu.pc
         self.cpu.pc += 1
         return addr
+    
+    def addr_relative(self) -> int:
+        offset = parse_twos_complement(self.cpu.fetch(self.cpu.pc))
+        self.cpu.pc += 1
+        return (self.cpu.pc + offset) & 0xffff
+    
+    def addr_accumulator(self) -> int:
+        return ACC_ADDR
     
     def addr_absolute(self) -> int:
         low = self.cpu.fetch(self.cpu.pc)
@@ -63,9 +105,9 @@ class Isa:
         
         return addr
     def addr_absolute_x(self) -> int:
-        return addr_absolute_indexed(self.cpu.rx)
+        return self.addr_absolute_indexed(self.cpu.rx)
     def addr_absolute_y(self) -> int:
-        return addr_absolute_indexed(self.cpu.ry)
+        return self.addr_absolute_indexed(self.cpu.ry)
     
     def addr_zero_page(self) -> int:
         addr = self.cpu.fetch(self.cpu.pc)
@@ -87,8 +129,8 @@ class Isa:
 
         zp_addr = (operand + self.cpu.rx) & 0xff
 
-        low = self.cpu.memory[zp_addr]
-        high = self.cpu.memory[(zp_addr + 1) & 0xff]
+        low = self.cpu.fetch(zp_addr)
+        high = self.cpu.fetch((zp_addr + 1) & 0xff)
 
         return (high << 8) | low
 
@@ -102,28 +144,57 @@ class Isa:
 
         addr = (base_addr + self.cpu.ry) & 0xffff
 
-        if (base_addr & 0xff00) != (addr & 0xff00):
-            self.cpu.await_cycles(1)
-
         return addr
+    
+    def addr_indirect(self) -> int:
+        low = self.cpu.fetch(self.cpu.pc)
+        self.cpu.pc += 1
+        high = self.cpu.fetch(self.cpu.pc)
+        self.cpu.pc += 1
+        ptr = build_word(high, low)
+        low_addr = self.cpu.fetch(ptr)
+        high_addr = self.cpu.fetch(ptr + 1)
+        return build_word(high_addr, low_addr)
 
+    def ld_reg(self, addr: int) -> int:
+        value = self.cpu.fetch(addr)
+        self.cpu.zero = value == 0
+        self.cpu.negative = get_bit(value, 7)
+        return value
     def lda(self, addr: int, opcode: int) -> None:
-        value = self.cpu.fetch(addr)
-        self.cpu.zero = value == 0
-        self.cpu.negative = get_bit(value, 7)
-        self.cpu.ra = value
-        
+        self.cpu.ra = self.ld_reg(addr)
     def ldx(self, addr: int, opcode: int) -> None:
-        value = self.cpu.fetch(addr)
-        self.cpu.zero = value == 0
-        self.cpu.negative = get_bit(value, 7)
-        self.cpu.rx = value
-        
+        self.cpu.rx = self.ld_reg(addr)
     def ldy(self, addr: int, opcode: int) -> None:
-        value = self.cpu.fetch(addr)
-        self.cpu.zero = value == 0
-        self.cpu.negative = get_bit(value, 7)
-        self.cpu.ry = value
+        self.cpu.ry = self.ld_reg(addr)
+        
+    def sta(self, addr: int, opcode: int) -> None:
+        self.cpu.write(addr, self.cpu.ra)
+    def stx(self, addr: int, opcode: int) -> None:
+        self.cpu.write(addr, self.cpu.rx)
+    def sty(self, addr: int, opcode: int) -> None:
+        self.cpu.write(addr, self.cpu.ry)
+        
+    def jmp(self, addr: int, opcode: int) -> None:
+        self.cpu.pc = addr
+        
+    def beq(self, addr: int, opcode: int) -> int:
+        if self.cpu.zero:
+            self.cpu.pc = addr
+        
+    def add_val(self, val: int, add: int) -> int:
+        result = (val + add) & 0xff
+        self.cpu.zero = result == 0
+        self.cpu.negative = get_bit(result, 7)
+        return result
+    def inc(self, addr: int, opcode: int) -> None:
+        val = self.cpu.fetch(addr)
+        val = self.add_val(val, 1)
+        self.cpu.write(addr, val)
+    def inx(self, addr: int, opcode: int) -> None:
+        self.cpu.rx = self.add_val(self.cpu.rx, 1)
+    def iny(self, addr: int, opcode: int) -> None:
+        self.cpu.ry = self.add_val(self.cpu.ry, 1)
 
 class Cpu:
     def __init__(self, components: dict[str, MemoryMappedComponent]) -> None:
@@ -155,13 +226,13 @@ class Cpu:
         self.negative = False
         
     def push_byte(self, val: int) -> None:
-        addr = 0x0100 | (self.sp & 0xFF)
-        self.write(addr, val & 0xFF)
-        self.sp = (self.sp - 1) & 0xFF
+        addr = 0x0100 | (self.sp & 0xff)
+        self.write(addr, val & 0xff)
+        self.sp = (self.sp - 1) & 0xff
 
     def pop_byte(self) -> int:
-        self.sp = (self.sp + 1) & 0xFF
-        addr = 0x0100 | (self.sp & 0xFF)
+        self.sp = (self.sp + 1) & 0xff
+        addr = 0x0100 | (self.sp & 0xff)
         return self.fetch(addr)
 
     def pack_status(self, break_flag_for_push: bool = False) -> int:
@@ -196,10 +267,17 @@ class Cpu:
         return c
     
     def fetch(self, addr: int) -> int:
+        if addr == ACC_ADDR:
+            return self.ra
+        
         c = self.resolve_component(addr)
         return c.fetch(addr)
     
     def write(self, addr: int, val: int) -> None:
+        if addr == ACC_ADDR:
+            self.ra = val
+            return
+        
         c = self.resolve_component(addr)
         c.write(addr, val)
         
@@ -208,7 +286,7 @@ class Cpu:
         self.pc += 1
         
         if opcode not in self.isa.opcodes:
-            raise NotImplementedError(f"Opcode ${opcode:02x} not implemented")
+            raise NotImplementedError(f"Opcode 0x{opcode:02x} not implemented")
         
         instr_func, addr_mode_func = self.isa.opcodes[opcode]
         addr = None if addr_mode_func is None else addr_mode_func()
@@ -231,7 +309,7 @@ class Cpu:
             print(f"| {name}: ${val:02x} {char_section} {val:3} 0b{val:08b}")
         
         print(f"\nRegisters:")
-        print(f"| pc: 0x${self.pc:04x}")
+        print(f"| pc: 0x{self.pc:04x}")
         print_reg("ra", self.ra)
         print_reg("rx", self.rx)
         print_reg("ry", self.ry)

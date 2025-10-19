@@ -20,10 +20,6 @@ def main() -> None:
     args = parse_args()
     
     slot1 = ExpansionSlot(0xc000, 0xc7ff)
-    text = [ord(c) for c in "Hello, world!"]
-    slot1.mount(lambda addr: text[addr] if 0 <= addr < len(text) else 0x00,
-                lambda addr, val: None)
-
     slot2 = ExpansionSlot(0xc800, 0xcfff)
 
     cpu = Cpu({
@@ -34,7 +30,6 @@ def main() -> None:
         "serial": SerialOutput(0xffff),
     })
 
-
     with open("rom", "rb") as f:
         program = list(f.read())
     
@@ -43,7 +38,13 @@ def main() -> None:
     cpu.reset()
     
     while True:
-        instr = cpu.execute()
+        try:
+            instr = cpu.execute()
+        except NotImplementedError as e:    
+            print("\n\n\033[31m", end="")
+            print(f"6502: {e}, execution aborted.")
+            print("\033[0m")
+            exit(1)
         if args.debug:
             cpu.visualise(instr)
             print(cpu.mm_components["ram"].fetch(0x00ff))
