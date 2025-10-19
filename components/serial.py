@@ -1,4 +1,4 @@
-from mm_component import MemoryMappedComponent
+from components.mm_component import MemoryMappedComponent
 
 from sys import stdout
 
