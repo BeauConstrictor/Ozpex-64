@@ -42,13 +42,18 @@ def main() -> None:
             instr = cpu.execute()
         except NotImplementedError as e:    
             print("\n\n\033[31m", end="")
-            print(f"6502: {e}, execution aborted.")
+            print(f"6502: {e}, execution aborted.", end="")
             print("\033[0m")
             exit(1)
         if args.debug:
             cpu.visualise(instr)
-            print(cpu.mm_components["ram"].fetch(0x00ff))
             input()
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n\n\033[31m", end="")
+        print(f"6502: ctrl+c: exit.", end="")
+        print("\033[0m")
+        exit(0)

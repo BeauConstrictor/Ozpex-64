@@ -27,6 +27,8 @@ class Isa:
         self.opcodes = {
             # http://www.6502.org/users/obelisk/6502/reference.html
             
+            0xea: (self.nop, None),
+            
             0xa9: (self.lda, self.addr_immediate),
             0xa5: (self.lda, self.addr_zero_page),
             0xb5: (self.lda, self.addr_zero_page_x),
@@ -68,6 +70,7 @@ class Isa:
             0x6c: (self.jmp, self.addr_indirect),
             
             0xf0: (self.beq, self.addr_relative),
+            0xd0: (self.bne, self.addr_relative),
             
             0xe6: (self.inc, self.addr_zero_page),
             0xf6: (self.inc, self.addr_zero_page_x),
@@ -79,6 +82,23 @@ class Isa:
             
             0x20: (self.jsr, self.addr_absolute),
             0x60: (self.rts, None),
+            
+            0xc9: (self.cmp, self.addr_immediate),
+            0xc5: (self.cmp, self.addr_zero_page),
+            0xd5: (self.cmp, self.addr_zero_page_x),
+            0xcd: (self.cmp, self.addr_absolute),
+            0xdd: (self.cmp, self.addr_absolute_x),
+            0xd9: (self.cmp, self.addr_absolute_y),
+            0xc1: (self.cmp, self.addr_indexed_indirect),
+            0xd1: (self.cmp, self.addr_indirect_indexed),
+            
+            0xe0: (self.cpx, self.addr_immediate),
+            0xe4: (self.cpx, self.addr_zero_page),
+            0xec: (self.cpx, self.addr_absolute),
+            
+            0xc0: (self.cpy, self.addr_immediate),
+            0xc4: (self.cpy, self.addr_zero_page),
+            0xcc: (self.cpy, self.addr_absolute),
         }
         
     def addr_immediate(self) -> int:
@@ -160,6 +180,9 @@ class Isa:
         low_addr = self.cpu.fetch(ptr)
         high_addr = self.cpu.fetch(ptr + 1)
         return build_word(high_addr, low_addr)
+    
+    def nop(self, addr: int, opdcode: int) -> None:
+        return sleep(0.01)
 
     def ld_reg(self, addr: int) -> int:
         value = self.cpu.fetch(addr)
@@ -186,6 +209,9 @@ class Isa:
     def beq(self, addr: int, opcode: int) -> int:
         if self.cpu.zero:
             self.cpu.pc = addr
+    def bne(self, addr: int, opcode: int) -> int:
+        if not self.cpu.zero:
+            self.cpu.pc = addr
         
     def add_val(self, val: int, add: int) -> int:
         result = (val + add) & 0xff
@@ -210,6 +236,18 @@ class Isa:
     def rts(self, addr: int, opcode: int) -> None:
         rts_addr = build_word(self.cpu.pop_byte(), self.cpu.pop_byte())
         self.cpu.pc = rts_addr + 1 # or is it - 1?
+        
+    def cp_reg(self, reg: int, addr: int) -> None:
+        m = self.cpu.fetch(addr)
+        self.cpu.carry = reg >= m
+        self.cpu.zero = reg == m
+        self.cpu.negative = get_bit(reg-m, 7)
+    def cmp(self, addr: int, opcode: int) -> None:
+        self.cp_reg(self.cpu.ra, addr)
+    def cpx(self, addr: int, opcode: int) -> None:
+        self.cp_reg(self.cpu.rx, addr)
+    def cpy(self, addr: int, opcode: int) -> None:
+        self.cp_reg(self.cpu.ry, addr)
 
 class Cpu:
     def __init__(self, components: dict[str, MemoryMappedComponent]) -> None:
