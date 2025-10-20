@@ -10,6 +10,11 @@ ACC_ADDR = -0xacc
 def build_word(high: int, low: int) -> int:
     return (high << 8) | low
 
+def break_word(word: int) -> tuple[int, int]:
+    low = word & 0xff
+    high = (word >> 8) & 0xff
+    return high, low
+
 def get_bit(value, bit):
     return bool(value & (1 << bit))
 
@@ -70,8 +75,10 @@ class Isa:
             0xfe: (self.inc, self.addr_absolute_x),
             
             0xe8: (self.inx, None),
-            
             0xc8: (self.iny, None),
+            
+            0x20: (self.jsr, self.addr_absolute),
+            0x60: (self.rts, None),
         }
         
     def addr_immediate(self) -> int:
@@ -119,9 +126,9 @@ class Isa:
         self.cpu.pc += 1
         return addr
     def addr_zero_page_x(self) -> int:
-        return addr_zero_page_indexed(self.cpu.rx)
+        return self.addr_zero_page_indexed(self.cpu.rx)
     def addr_zero_page_y(self) -> int:
-        return addr_zero_page_indexed(self.cpu.ry)
+        return self.addr_zero_page_indexed(self.cpu.ry)
     
     def addr_indexed_indirect(self) -> int:
         operand = self.cpu.fetch(self.cpu.pc)
@@ -138,13 +145,11 @@ class Isa:
         operand = self.cpu.fetch(self.cpu.pc)
         self.cpu.pc += 1
 
-        low = self.cpu.memory[operand]
-        high = self.cpu.memory[(operand + 1) & 0xff]
+        low = self.cpu.fetch(operand)
+        high = self.cpu.fetch((operand + 1) & 0xff)
         base_addr = (high << 8) | low
 
-        addr = (base_addr + self.cpu.ry) & 0xffff
-
-        return addr
+        return (base_addr + self.cpu.ry) & 0xffff
     
     def addr_indirect(self) -> int:
         low = self.cpu.fetch(self.cpu.pc)
@@ -195,6 +200,16 @@ class Isa:
         self.cpu.rx = self.add_val(self.cpu.rx, 1)
     def iny(self, addr: int, opcode: int) -> None:
         self.cpu.ry = self.add_val(self.cpu.ry, 1)
+        
+    def jsr(self, addr: int, opcode: int) -> None:
+        rts_bytes = break_word(self.cpu.pc - 1) # or is it + 1?
+        self.cpu.push_byte(rts_bytes[1])
+        self.cpu.push_byte(rts_bytes[0])
+        self.cpu.pc = addr
+        
+    def rts(self, addr: int, opcode: int) -> None:
+        rts_addr = build_word(self.cpu.pop_byte(), self.cpu.pop_byte())
+        self.cpu.pc = rts_addr + 1 # or is it - 1?
 
 class Cpu:
     def __init__(self, components: dict[str, MemoryMappedComponent]) -> None:

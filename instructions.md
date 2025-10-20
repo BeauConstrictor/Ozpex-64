@@ -19,7 +19,7 @@ itself will be accessed.
 - [x] Zero Page
 - [x] Zero Page,X
 - [x] Zero Page,Y
-- [ ] Relative
+- [x] Relative
 - [x] Absolute
 - [x] Absolute,X
 - [x] Absolute,Y
@@ -59,7 +59,7 @@ This is a list of the instructions that I have completed, and the ones that I ha
 - [x] INX
 - [x] INY
 - [x] JMP
-- [ ] JSR
+- [x] JSR
 - [x] LDA
 - [x] LDX
 - [x] LDY
@@ -73,7 +73,7 @@ This is a list of the instructions that I have completed, and the ones that I ha
 - [ ] ROL
 - [ ] ROR
 - [ ] RTI
-- [ ] RTS
+- [x] RTS
 - [ ] SBC
 - [ ] SEC
 - [ ] SED
