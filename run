@@ -1,5 +1,5 @@
 #!/bin/env sh
 
-./vasm rom.asm -Fbin -dotdir -o rom
+./vasm "programs/$1.asm" -Fbin -dotdir -o rom
 echo -e SERIAL:
 python3 main.py
