@@ -36,10 +36,10 @@ This is a list of the instructions that I have completed, and the ones that I ha
 - [ ] ASL
 - [ ] BCC
 - [ ] BCS
-- [ ] BEQ
+- [x] BEQ
 - [ ] BIT
 - [ ] BMI
-- [ ] BNE
+- [x] BNE
 - [ ] BPL
 - [ ] BRK
 - [ ] BVC
@@ -48,9 +48,9 @@ This is a list of the instructions that I have completed, and the ones that I ha
 - [ ] CLD
 - [ ] CLI
 - [ ] CLV
-- [ ] CMP
-- [ ] CPX
-- [ ] CPY
+- [x] CMP
+- [x] CPX
+- [x] CPY
 - [ ] DEC
 - [ ] DEX
 - [ ] DEY
@@ -64,7 +64,7 @@ This is a list of the instructions that I have completed, and the ones that I ha
 - [x] LDX
 - [x] LDY
 - [ ] LSR
-- [ ] NOP
+- [x] NOP
 - [ ] ORA
 - [ ] PHA
 - [ ] PHP

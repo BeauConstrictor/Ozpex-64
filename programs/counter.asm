@@ -23,7 +23,8 @@ _delay_loop:
   cpy #INTERVAL
   beq _delay_done
   iny
-  nop
+  nop ; nop has quite a long delay in my emulator
+      ; i will add some hardware timer component soon
   jmp _delay_loop
 _delay_done:
   rts
