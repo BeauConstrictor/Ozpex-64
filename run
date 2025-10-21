@@ -1,5 +1,8 @@
 #!/bin/env sh
 
+set -e
+
 ./vasm "programs/$1.asm" -Fbin -dotdir -o rom
-echo -e "\nSERIAL:"
-python3 main.py
+tput smcup 
+clear
+python3 main.py && tput rmcup
