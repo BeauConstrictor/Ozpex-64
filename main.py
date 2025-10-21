@@ -3,6 +3,7 @@ import argparse
 from components.cpu import Cpu
 from components.ram import Ram
 from components.rom import Rom
+from components.timer import Timer
 from components.serial import SerialOutput
 from components.expansion_slot import ExpansionSlot
 
@@ -21,11 +22,12 @@ def main() -> None:
     slot2 = ExpansionSlot(0xc800, 0xcfff)
 
     cpu = Cpu({
-        "ram": Ram(0x0000, 0xbfff),
+        "ram": Ram(0x0000, 0xbffc),
+        "timer": Timer(0xbffd, 0xbffe),
+        "serial": SerialOutput(0xbfff),
         "slot1": slot1,
         "slot2": slot2,
-        "rom": Rom(0xd000, 0xfffe),
-        "serial": SerialOutput(0xffff),
+        "rom": Rom(0xd000, 0xffff),
     })
 
     with open("rom", "rb") as f:

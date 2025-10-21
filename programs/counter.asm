@@ -1,6 +1,6 @@
   .org $d000
 
-SERIAL = $ffff
+SERIAL = $bfff
 CLEAR =    $11
 
 INTERVAL = 15

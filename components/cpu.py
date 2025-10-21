@@ -128,6 +128,8 @@ class Isa:
             0x58: (self.cli, None),
             
             0xb8: (self.clv, None),
+            
+            0x98: (self.tya, None),
         }
         
     def addr_immediate(self) -> int:
@@ -318,6 +320,11 @@ class Isa:
         
     def clv(self, addr: int, opcode: int) -> None:
         self.cpu.overflow = False
+        
+    def tya(self, addr: int, opcode: int) -> None:
+        self.cpu.zero = self.cpu.ra == 0
+        self.cpu.negative = get_bit(self.cpu.ra, 7)
+        self.cpu.ra = self.cpu.ry
 
 
 class Cpu:

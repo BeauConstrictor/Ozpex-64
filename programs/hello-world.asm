@@ -2,7 +2,7 @@
 
 NEWLINE = 10
 
-SERIAL = $ffff
+SERIAL = $bfff
 
 ; memory allocation:
 PRINT = $50        ; 2 bytes

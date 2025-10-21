@@ -86,4 +86,4 @@ This is a list of the instructions that I have completed, and the ones that I ha
 - [ ] TSX
 - [ ] TXA
 - [ ] TXS
-- [ ] TYA
+- [x] TYA
