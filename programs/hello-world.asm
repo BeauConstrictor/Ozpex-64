@@ -4,7 +4,7 @@ NEWLINE = 10
 
 SERIAL = $ffff
 
-; memory allzocation:
+; memory allocation:
 PRINT = $50        ; 2 bytes
 
 reset:

@@ -31,7 +31,7 @@ itself will be accessed.
 
 This is a list of the instructions that I have completed, and the ones that I have left to complete.
 
-- [ ] ADC
+- [x] ADC
 - [ ] AND
 - [ ] ASL
 - [ ] BCC
@@ -44,10 +44,10 @@ This is a list of the instructions that I have completed, and the ones that I ha
 - [ ] BRK
 - [ ] BVC
 - [ ] BVS
-- [ ] CLC
-- [ ] CLD
-- [ ] CLI
-- [ ] CLV
+- [x] CLC
+- [x] CLD
+- [x] CLI
+- [x] CLV
 - [x] CMP
 - [x] CPX
 - [x] CPY
@@ -74,10 +74,10 @@ This is a list of the instructions that I have completed, and the ones that I ha
 - [ ] ROR
 - [ ] RTI
 - [x] RTS
-- [ ] SBC
-- [ ] SEC
-- [ ] SED
-- [ ] SEI
+- [x] SBC
+- [x] SEC
+- [x] SED
+- [x] SEI
 - [x] STA
 - [x] STX
 - [x] STY

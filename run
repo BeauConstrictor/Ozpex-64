@@ -1,5 +1,5 @@
 #!/bin/env sh
 
 ./vasm "programs/$1.asm" -Fbin -dotdir -o rom
-echo -e SERIAL:
+echo -e "\nSERIAL:"
 python3 main.py

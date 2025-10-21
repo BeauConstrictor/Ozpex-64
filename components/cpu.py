@@ -99,6 +99,35 @@ class Isa:
             0xc0: (self.cpy, self.addr_immediate),
             0xc4: (self.cpy, self.addr_zero_page),
             0xcc: (self.cpy, self.addr_absolute),
+            
+            0x69: (self.adc, self.addr_immediate),
+            0x65: (self.adc, self.addr_zero_page),
+            0x75: (self.adc, self.addr_zero_page_x),
+            0x6d: (self.adc, self.addr_absolute),
+            0x7d: (self.adc, self.addr_absolute_x),
+            0x79: (self.adc, self.addr_absolute_y),
+            0x61: (self.adc, self.addr_indexed_indirect),
+            0x71: (self.adc, self.addr_indirect_indexed),
+            
+            0xe9: (self.sbc, self.addr_immediate),
+            0xe5: (self.sbc, self.addr_zero_page),
+            0xf5: (self.sbc, self.addr_zero_page_x),
+            0xed: (self.sbc, self.addr_absolute),
+            0xfd: (self.sbc, self.addr_absolute_x),
+            0xf9: (self.sbc, self.addr_absolute_y),
+            0xe1: (self.sbc, self.addr_indexed_indirect),
+            0xf1: (self.sbc, self.addr_indirect_indexed),
+            
+            0x38: (self.sec, None),
+            0x18: (self.clc, None),
+            
+            0xf8: (self.sed, None),
+            0xd8: (self.cld, None),
+            
+            0x78: (self.sei, None),
+            0x58: (self.cli, None),
+            
+            0xb8: (self.clv, None),
         }
         
     def addr_immediate(self) -> int:
@@ -248,6 +277,48 @@ class Isa:
         self.cp_reg(self.cpu.rx, addr)
     def cpy(self, addr: int, opcode: int) -> None:
         self.cp_reg(self.cpu.ry, addr)
+        
+    def adc_sbc(self, addr: int, opcode: int, sbc: bool) -> None:
+        if self.cpu.decimal:
+            raise NotImplementedError("Decimal mode is not implemented.")
+        
+        a = self.cpu.ra
+        b = self.cpu.fetch(addr)
+        if sbc: b ^= 0xff
+
+        s = a + b + self.cpu.carry
+        self.cpu.carry = s > 0xff
+        s &= 0xff
+        self.cpu.zero = s == 0
+        self.cpu.negative = get_bit(s, 7)
+
+        if sbc: self.cpu.overflow = ((a ^ s) & (~b ^ s) & 0x80) != 0
+        else: self.cpu.overflow = ((a ^ s) & (b ^ s) & 0x80) != 0
+            
+        self.cpu.ra = s
+    def adc(self, addr: int, opcode: int) -> None:
+        self.adc_sbc(addr, opcode, sbc=False)
+    def sbc(self, addr: int, opcode: int) -> None:
+        self.adc_sbc(addr, opcode, sbc=True)
+        
+    def sec(self, addr: int, opcode: int) -> None:
+        self.cpu.carry = True
+    def clc(self, addr: int, opcode: int) -> None:
+        self.cpu.carry = False
+        
+    def sed(self, addr: int, opcode: int) -> None:
+        self.cpu.decimal = True
+    def cld(self, addr: int, opcode: int) -> None:
+        self.cpu.decimal = False
+        
+    def sei(self, addr: int, opcode: int) -> None:
+        self.cpu.interrupt_disable = True
+    def cli(self, addr: int, opcode: int) -> None:
+        self.cpu.interrupt_disable = True
+        
+    def clv(self, addr: int, opcode: int) -> None:
+        self.cpu.overflow = False
+
 
 class Cpu:
     def __init__(self, components: dict[str, MemoryMappedComponent]) -> None:

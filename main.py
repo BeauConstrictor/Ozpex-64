@@ -6,8 +6,6 @@ from components.rom import Rom
 from components.serial import SerialOutput
 from components.expansion_slot import ExpansionSlot
 
-RESETVEC = 0xfffc
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     
