@@ -188,7 +188,7 @@ class Isa:
         low = self.cpu.fetch(zp_addr)
         high = self.cpu.fetch((zp_addr + 1) & 0xff)
 
-        return (high << 8) | low
+        return build_word(high, low)
 
     def addr_indirect_indexed(self) -> int:
         operand = self.cpu.fetch(self.cpu.pc)
@@ -196,7 +196,7 @@ class Isa:
 
         low = self.cpu.fetch(operand)
         high = self.cpu.fetch((operand + 1) & 0xff)
-        base_addr = (high << 8) | low
+        base_addr = build_word(high, low)
 
         return (base_addr + self.cpu.ry) & 0xffff
     
@@ -314,7 +314,7 @@ class Isa:
     def sei(self, addr: int, opcode: int) -> None:
         self.cpu.interrupt_disable = True
     def cli(self, addr: int, opcode: int) -> None:
-        self.cpu.interrupt_disable = True
+        self.cpu.interrupt_disable = False
         
     def clv(self, addr: int, opcode: int) -> None:
         self.cpu.overflow = False
