@@ -18,7 +18,7 @@ class Rom(MemoryMappedComponent):
         return self.start <= addr <= self.end
     
     def fetch(self, addr: int) -> int:
-        return self.addresses[addr - self.start]
+        return self.addresses[addr - self.start] & 0xff
     
     def write(self, addr: int, val: int) -> None:
         pass

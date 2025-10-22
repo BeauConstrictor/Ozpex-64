@@ -129,6 +129,9 @@ class Isa:
             
             0xb8: (self.clv, None),
             
+            0xaa: (self.tax, None),
+            0xa8: (self.tay, None),
+            0x8a: (self.txa, None),
             0x98: (self.tya, None),
         }
         
@@ -321,10 +324,23 @@ class Isa:
     def clv(self, addr: int, opcode: int) -> None:
         self.cpu.overflow = False
         
+    def transfer(self, val: int) -> int:
+        self.cpu.zero = val == 0
+        self.cpu.negative = get_bit(val, 7)
+        return val
+    def tax(self, addr: int, opcode: int) -> None:
+        self.cpu.rx = self.transfer(self.cpu.ra)
+    def tay(self, addr: int, opcode: int) -> None:
+        self.cpu.ry = self.transfer(self.cpu.ra)
+    def txa(self, addr: int, opcode: int) -> None:
+        self.cpu.ra = self.transfer(self.cpu.rx)
     def tya(self, addr: int, opcode: int) -> None:
-        self.cpu.zero = self.cpu.ra == 0
-        self.cpu.negative = get_bit(self.cpu.ra, 7)
-        self.cpu.ra = self.cpu.ry
+        self.cpu.ra = self.transfer(self.cpu.ry)
+        
+    def tsx(self, addr: int, opcode: int) -> None:
+        self.cpu.rx = self.transfer(self.cpu.sp)
+    def txs(self, addr: int, opcode: int) -> None:
+        self.cpu.sp = self.cpu.rx
 
 
 class Cpu:
@@ -355,6 +371,15 @@ class Cpu:
         self.break_flag = False
         self.overflow = False
         self.negative = False
+        
+    def ensure_wrap(self) -> None:
+        # just in case i forgot to wrap somewhere in a function, this enforces
+        # it
+        self.pc &= 0xffff
+        self.sp &= 0xff
+        self.ra &= 0xff
+        self.rx &= 0xff
+        self.ry &= 0xff
         
     def push_byte(self, val: int) -> None:
         addr = 0x0100 | (self.sp & 0xff)
@@ -428,6 +453,7 @@ class Cpu:
         addr, instr_func, opcode = self.decode()
         
         instr_func(addr, opcode)
+        self.ensure_wrap()
         
         return instr_func.__name__
 

@@ -81,9 +81,9 @@ This is a list of the instructions that I have completed, and the ones that I ha
 - [x] STA
 - [x] STX
 - [x] STY
-- [ ] TAX
-- [ ] TAY
-- [ ] TSX
-- [ ] TXA
-- [ ] TXS
+- [x] TAX
+- [x] TAY
+- [x] TSX
+- [x] TXA
+- [x] TXS
 - [x] TYA

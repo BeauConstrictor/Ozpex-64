@@ -24,7 +24,8 @@ def main() -> None:
     # serial: $8002
     # slot 1: $8003 -> $a002  ( 8,192 B)
     # slot 2: $a003 -> $c002  ( 8,192 B)
-    # rom:    $c003 -> $ffff  (16,381 B)
+    # rom:    $c003 -> $ffff  (16,381 B) - an odd size, but it's just whatever
+    #                                      fit in the remaining space
     
     cpu = Cpu({
         "ram": Ram(0x0000, 0x7fff),
