@@ -1,8 +1,8 @@
-  .org $d000
+  .org $c003
 
 NEWLINE = 10
 
-SERIAL = $bfff
+SERIAL = $8002
 
 ; memory allocation:
 PRINT = $50        ; 2 bytes

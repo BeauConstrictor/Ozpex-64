@@ -18,22 +18,27 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     
-    slot1 = ExpansionSlot(0xc000, 0xc7ff)
-    slot2 = ExpansionSlot(0xc800, 0xcfff)
-
+    # MEMORY MAP:
+    # ram:    $0000 -> $7fff  (32,768 B)
+    # timer:  $8000 && $8001
+    # serial: $8002
+    # slot 1: $8003 -> $a002  ( 8,192 B)
+    # slot 2: $a003 -> $c002  ( 8,192 B)
+    # rom:    $c003 -> $ffff  (16,381 B)
+    
     cpu = Cpu({
-        "ram": Ram(0x0000, 0xbffc),
-        "timer": Timer(0xbffd, 0xbffe),
-        "serial": SerialOutput(0xbfff),
-        "slot1": slot1,
-        "slot2": slot2,
-        "rom": Rom(0xd000, 0xffff),
+        "ram": Ram(0x0000, 0x7fff),
+        "timer": Timer(0x8000, 0x8001),
+        "serial": SerialOutput(0x8002),
+        "slot1": ExpansionSlot(0x8003, 0xa002),
+        "slot2": ExpansionSlot(0xa003, 0xc002),
+        "rom": Rom(0xc003, 0xffff),
     })
 
     with open("rom", "rb") as f:
         program = list(f.read())
     
-    cpu.mm_components["rom"].load(program, 0xd000)
+    cpu.mm_components["rom"].load(program, 0xc003)
     
     cpu.reset()
     

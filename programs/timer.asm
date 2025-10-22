@@ -1,7 +1,7 @@
-  .org $d000
+  .org $c003
 
-TIMER =      $bffd
-SERIAL =     $bfff
+TIMER =      $8000
+SERIAL =     $8002
 
 CLEAR =      $11
 NEWLINE =    $a

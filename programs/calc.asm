@@ -1,6 +1,6 @@
-  .org $d000
+  .org $c003
 
-SERIAL = $bfff
+SERIAL = $8002
 CLEAR =    $11
 NEWLINE =  $a
 
