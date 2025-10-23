@@ -122,7 +122,13 @@ _command_execute:
   beq _command_execute_slot2
   cmp #"3"
   beq _command_execute_rom
-  rts ; unknown location
+   ; unknown location
+   lda #unknown_exec_location_msg
+  sta PRINT
+  lda #>unknown_exec_location_msg
+  sta PRINT+1
+  jsr print
+  rts
 _command_execute_slot1:
   jmp SLOT1
 _command_execute_slot2:
