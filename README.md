@@ -19,7 +19,7 @@ Commands are made up of 1 character, and spaces anywhere in the command are igno
 
 - jump (`j`): typing a `j` followed by a 2 byte memory address (in hex) will start executing code at that address.
 
-- execute (`x`): a shorthand for jump, typing an `x` followed by either a 1, 2 or 3 will jump to cartrdidge slot 1, slot 2 and the ROM respectively.
+- execute (`x`): a shorthand for jump, typing an `x` followed by either a 1, 2 or 3 will jump to cartridge slot 1, slot 2 and the ROM respectively.
 
 ## Emulator
 
