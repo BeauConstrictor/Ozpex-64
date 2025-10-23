@@ -71,6 +71,8 @@ class Isa:
             
             0xf0: (self.beq, self.addr_relative),
             0xd0: (self.bne, self.addr_relative),
+            0xb0: (self.bcs, self.addr_relative),
+            0x90: (self.bcc, self.addr_relative),
             
             0xe6: (self.inc, self.addr_zero_page),
             0xf6: (self.inc, self.addr_zero_page_x),
@@ -133,6 +135,39 @@ class Isa:
             0xa8: (self.tay, None),
             0x8a: (self.txa, None),
             0x98: (self.tya, None),
+            
+            0x0a: (self.asl, self.addr_accumulator),
+            0x06: (self.asl, self.addr_zero_page),
+            0x16: (self.asl, self.addr_zero_page_x),
+            0x0e: (self.asl, self.addr_absolute),
+            0x1e: (self.asl, self.addr_absolute_x),
+            
+            0x4a: (self.lsr, self.addr_accumulator),
+            0x46: (self.lsr, self.addr_zero_page),
+            0x56: (self.lsr, self.addr_zero_page_x),
+            0x4e: (self.lsr, self.addr_absolute),
+            0x5e: (self.lsr, self.addr_absolute_x),
+            
+            0x09: (self.ora, self.addr_immediate),
+            0x05: (self.ora, self.addr_zero_page),
+            0x15: (self.ora, self.addr_zero_page_x),
+            0x0d: (self.ora, self.addr_absolute),
+            0x1d: (self.ora, self.addr_absolute_x),
+            0x19: (self.ora, self.addr_absolute_y),
+            0x01: (self.ora, self.addr_indexed_indirect),
+            0x11: (self.ora, self.addr_indirect_indexed),
+            
+            0x29: (self.and_, self.addr_immediate),
+            0x25: (self.and_, self.addr_zero_page),
+            0x35: (self.and_, self.addr_zero_page_x),
+            0x2d: (self.and_, self.addr_absolute),
+            0x3d: (self.and_, self.addr_absolute_x),
+            0x39: (self.and_, self.addr_absolute_y),
+            0x21: (self.and_, self.addr_indexed_indirect),
+            0x31: (self.and_, self.addr_indirect_indexed),
+            
+            0x48: (self.pha, None),
+            0x68: (self.pla, None),
         }
         
     def addr_immediate(self) -> int:
@@ -241,11 +276,13 @@ class Isa:
         self.cpu.pc = addr
         
     def beq(self, addr: int, opcode: int) -> int:
-        if self.cpu.zero:
-            self.cpu.pc = addr
+        if self.cpu.zero: self.cpu.pc = addr
     def bne(self, addr: int, opcode: int) -> int:
-        if not self.cpu.zero:
-            self.cpu.pc = addr
+        if not self.cpu.zero: self.cpu.pc = addr
+    def bcs(self, addr: int, opcode: int) -> int:
+        if self.cpu.carry: self.cpu.pc = addr
+    def bcc(self, addr: int, opcode: int) -> int:
+        if not self.cpu.carry: self.cpu.pc = addr
         
     def add_val(self, val: int, add: int) -> int:
         result = (val + add) & 0xff
@@ -342,6 +379,25 @@ class Isa:
     def txs(self, addr: int, opcode: int) -> None:
         self.cpu.sp = self.cpu.rx
 
+    def asl(self, addr: int, opcode: int) -> None:
+        value = self.cpu.fetch(addr)
+        self.cpu.carry = get_bit(value, 7)
+        self.cpu.ra = self.transfer(value << 1 & 0xff)
+    def lsr(self, addr: int, opcode: int) -> None:
+        value = self.cpu.fetch(addr)
+        self.cpu.carry = get_bit(value, 7)
+        self.cpu.ra = self.transfer(value >> 1 & 0xff)
+        
+    def ora(self, addr: int, opcode: int) -> None:
+        self.cpu.ra = self.transfer(self.cpu.ra | self.cpu.fetch(addr))
+        
+    def and_(self, addr: int, opcode: int) -> None:
+        self.cpu.ra = self.transfer(self.cpu.ra & self.cpu.fetch(addr))
+        
+    def pha(self, addr: int, opcode: int) -> None:
+        self.cpu.push_byte(self.cpu.ra)
+    def pla(self, addr: int, opcode: int) -> None:
+        self.cpu.ra = self.cpu.pop_byte()
 
 class Cpu:
     def __init__(self, components: dict[str, MemoryMappedComponent]) -> None:

@@ -11,7 +11,6 @@ class Ram(MemoryMappedComponent):
         addr = start_addr
         
         for d in data:
-            print(f"writing 0x{addr:04x}")
             self.write(addr, d)
             addr += 1
     

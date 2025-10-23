@@ -33,9 +33,9 @@ This is a list of the instructions that I have completed, and the ones that I ha
 
 - [x] ADC
 - [ ] AND
-- [ ] ASL
-- [ ] BCC
-- [ ] BCS
+- [x] ASL
+- [x] BCC
+- [x] BCS
 - [x] BEQ
 - [ ] BIT
 - [ ] BMI
@@ -63,12 +63,12 @@ This is a list of the instructions that I have completed, and the ones that I ha
 - [x] LDA
 - [x] LDX
 - [x] LDY
-- [ ] LSR
+- [x] LSR
 - [x] NOP
 - [ ] ORA
-- [ ] PHA
+- [x] PHA
 - [ ] PHP
-- [ ] PLA
+- [x] PLA
 - [ ] PLP
 - [ ] ROL
 - [ ] ROR
