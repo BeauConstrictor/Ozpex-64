@@ -66,6 +66,7 @@ reset:
 
     ; A - B
     lda #"0" + A
+    sec
     sbc #B
     sta SERIAL
 
