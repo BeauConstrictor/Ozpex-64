@@ -11,7 +11,7 @@ This monitor is very unusal as commands are interpreted as they are typed, so th
 
 ### Commands
 
-Commands are made up of 1 character, and spaces anywhere in the command are ignored so that you can use them for clarity, or leave them out if you need to work faster.
+Commands are made up of 1 character, and spaces anywhere in the command are ignored so that you can use them for clarity, or leave them out if you want to work faster.
 
 - read (`r`): typing an `r` followed by a 2 byte memory address (in hex) will output the value at that address in both hex and ASCII.
 
