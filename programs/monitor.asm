@@ -35,6 +35,8 @@ command:
 _command_wait_for_key:
   jsr get_key
 
+  cmp #"c"
+  beq _command_clear
   cmp #"r"
   beq _command_read
   cmp #"w"
@@ -55,6 +57,10 @@ _command_wait_for_key:
   rts
 
 _command_skip:
+  rts
+_command_clear:
+  lda #$11 ; device control 1 (clear)
+  sta SERIAL
   rts
 _command_read:
   jsr get_byte

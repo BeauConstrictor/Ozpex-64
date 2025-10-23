@@ -21,6 +21,8 @@ Commands are made up of 1 character, and spaces anywhere in the command are igno
 
 - execute (`x`): a shorthand for jump, typing an `x` followed by either a 1, 2 or 3 will jump to cartridge slot 1, slot 2 and the ROM respectively.
 
+- clear (`c`): typing a `c` will immediately clear the screen.
+
 ## Emulator
 
 The emulator is a work in progress that develops alongside the software for the computer, so is not yet a complete 6502 emulator. Nevertheless, you can use it to try out the computer by typing `./run monitor` in the terminal. This will assemble the built-in monitor and load it into ROM before starting the computer. The emulator uses your terminal window as the serial output for programs.
