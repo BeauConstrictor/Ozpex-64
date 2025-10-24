@@ -1,4 +1,5 @@
 import argparse
+from time import sleep
 
 from components.cpu import Cpu
 from components.ram import Ram
@@ -46,9 +47,12 @@ def main() -> None:
     
     cpu.reset()
     
+    cycles_executed = 0
+    
     while True:
         try:
             instr = cpu.execute()
+                       
         except NotImplementedError as e:    
             print("\n\n\033[31m", end="")
             print(f"6502: {e}, execution aborted.", end="")
@@ -57,6 +61,12 @@ def main() -> None:
         if args.debug:
             cpu.visualise(instr)
             input()
+            
+        # on my computer, this gets ~1MHz
+        cycles_executed += 1
+        if cycles_executed % 200 == 0:
+            cycles_executed = 0
+            sleep(0.000001)
 
 if __name__ == "__main__":
     try:
