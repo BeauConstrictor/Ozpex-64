@@ -1,7 +1,8 @@
-  .org $c003
+  .org $8003
 
 SERIAL = $8002
 CLEAR =    $11
+NEWLINE =  $0a
 
 INTERVAL = 15
 
@@ -15,7 +16,12 @@ loop:
   beq reset
   stx SERIAL
   jsr delay
-  jmp loop
+  
+  lda SERIAL
+  beq loop
+  lda #NEWLINE
+  sta SERIAL
+  rts
 
 delay:
   ldy #0
@@ -31,7 +37,3 @@ _delay_done:
 
 done:
   jmp done
-
-; reset vector
-  .org  $fffc
-  .word reset

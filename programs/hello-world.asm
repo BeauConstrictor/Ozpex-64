@@ -1,4 +1,4 @@
-  .org $c003
+  .org $8003
 
 NEWLINE = 10
 
@@ -23,7 +23,9 @@ reset:
   jsr print
 
 done:
-  jmp done
+  lda SERIAL
+  beq done
+  rts
 
 ; write the address of a null-terminated string to PRINT
 ; modifies: a, y
@@ -42,8 +44,3 @@ message1:
   .byte "Hello, world!", NEWLINE, 0
 message2:
   .byte "Goodbye, world!", NEWLINE, 0
-
-
-; reset vector
-  .org  $fffc
-  .word reset

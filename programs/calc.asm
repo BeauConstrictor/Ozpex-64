@@ -1,4 +1,4 @@
-  .org $c003
+  .org $8003
 
 SERIAL = $8002
 CLEAR =    $11
@@ -70,8 +70,13 @@ reset:
     sbc #B
     sta SERIAL
 
+    lda #NEWLINE
+    sta SERIAL
+    
 done:
-  jmp done
+  lda SERIAL
+  beq done
+  rts
 
 print:
   ldy #0
@@ -90,7 +95,3 @@ minus:
     .byte " - ", 0
 equals:
     .byte " = ", 0
-
-; reset vector
-  .org  $fffc
-  .word reset

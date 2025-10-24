@@ -1,10 +1,10 @@
-  .org $c003
+  .org $8003
 
 TIMER =      $8000
 SERIAL =     $8002
 
-CLEAR =      $11
-NEWLINE =    $a
+BACKSPACE =  $08
+NEWLINE =    $0a
 
 ; memory allocation:
 LAST_TIMER = $50        ; 1 byte
@@ -18,10 +18,11 @@ reset:
 
     lda #$00
     sta LAST_TIMER ; make sure that it prints the first time around
-    lda #CLEAR
-    sta SERIAL
 
 timer:
+    lda SERIAL
+    bne quit
+
     ldy TIMER+1
     cpy LAST_TIMER
     beq timer
@@ -30,15 +31,16 @@ timer:
     sty LAST_TIMER
     jmp timer
 
+quit:
+  ; return to the system monitor
+  lda NEWLINE
+  rts
+
 print:
     ; clear the screen and print the current timer from the y reg
-    lda #CLEAR
+    lda #BACKSPACE
     sta SERIAL
     tya
     adc #"0" - 2
     sta SERIAL
     rts
-
-; reset vector
-  .org  $fffc
-  .word reset

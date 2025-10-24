@@ -2,16 +2,16 @@
 
 SERIAL = $8002
 CLEAR =    $11
-NEWLINE =  $a
+NEWLINE =  $0a
 
 ROM = $c003
 SLOT1 = $8003
 SLOT2 = $a003
 
 ; memory allocation:
-PRINT = $50        ; 2 bytes
-BYTE_BUILD = $60   ; 1 byte
-WORD_LOCATION = $70         ; 2 bytes
+PRINT = $a0           ; 2 bytes
+BYTE_BUILD = $a2      ; 1 byte
+WORD_LOCATION = $a3   ; 2 bytes
 
 reset:
   lda #boot_msg
@@ -25,7 +25,7 @@ command_loop:
   jmp command_loop
 
 ; show the prompt, run a full command and return
-; modifies: a, y
+; modifies: a, x, y
 command:
   lda #prompt
   sta PRINT
@@ -43,8 +43,6 @@ _command_wait_for_key:
   beq _command_write
   cmp #"j"
   beq _command_jump
-  cmp #"x"
-  beq _command_execute
   cmp #NEWLINE
   beq _command_skip
 
@@ -67,26 +65,16 @@ _command_read:
   sta WORD_LOCATION+1
   jsr get_byte
   sta WORD_LOCATION
+
+  ; use word_location as a pointer to fetch
   ldy #0
   lda (WORD_LOCATION),y
 
-  ; print the ascii char for the value
-  ldx #NEWLINE
-  stx SERIAL
-  ldx #"'"
-  stx SERIAL
-
-  sta SERIAL
-
-  ldx #"'"
-  stx SERIAL
-  ldx #NEWLINE
-  stx SERIAL
-
   ; print the hex representation of the value
+  ldx #NEWLINE
+  stx SERIAL
   ldx #"$"
   stx SERIAL
-
   jsr hex_byte
   stx SERIAL
   sty SERIAL
@@ -116,31 +104,14 @@ _command_jump:
   jsr get_byte
   sta WORD_LOCATION
 
+  ; jump to the location, but as a subroutine so that they can return back to
+  ; the monitor
+  lda #NEWLINE
+  sta SERIAL
+  jsr _command_jump_go
+  rts
+_command_jump_go:
   jmp (WORD_LOCATION)
-
-  rts
-_command_execute:
-  jsr get_key
-
-  cmp #"1"
-  beq _command_execute_slot1
-  cmp #"2"
-  beq _command_execute_slot2
-  cmp #"3"
-  beq _command_execute_rom
-   ; unknown location
-   lda #unknown_exec_location_msg
-  sta PRINT
-  lda #>unknown_exec_location_msg
-  sta PRINT+1
-  jsr print
-  rts
-_command_execute_slot1:
-  jmp SLOT1
-_command_execute_slot2:
-  jmp SLOT2
-_command_execute_rom:
-  jmp ROM
 
 ; return (in a) a single key, ignoring spacea
 ; modifies: a (duh)

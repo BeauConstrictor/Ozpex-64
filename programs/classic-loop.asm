@@ -1,4 +1,4 @@
-  .org $c003
+  .org $8003
 
 TIMER =      $8000
 SERIAL =     $8002
@@ -12,19 +12,22 @@ PRINT_INTERVAL = 250;ms
 LAST_TIMER =  $50        ; 1 byte
 
 reset:
-    lda #PRINT_INTERVAL
-    sta TIMER+1
+  lda #PRINT_INTERVAL
+  sta TIMER+1
 
-    sta TIMER ; start timer
+  sta TIMER ; start timer
 
 timer:
-    ldy TIMER
-    cpy LAST_TIMER
-    beq timer
+  ldy TIMER
+  cpy LAST_TIMER
+  beq timer
 
-    jsr print
-    sty LAST_TIMER
-    jmp timer
+  jsr print
+  sty LAST_TIMER
+  
+  lda SERIAL
+  beq timer
+  rts
 
 print:
   ldx #0
@@ -38,8 +41,4 @@ _print_done:
   rts
 
 message:
-  .byte "HELLO WORLD", NEWLINE, 0
-
-; reset vector
-  .org  $fffc
-  .word reset
+  .byte "Hello, world!", NEWLINE, 0

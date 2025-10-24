@@ -37,9 +37,12 @@ def main() -> None:
     })
 
     with open("rom", "rb") as f:
-        program = list(f.read())
+        rom = list(f.read())
+    cpu.mm_components["rom"].load(rom, 0xc003)
     
-    cpu.mm_components["rom"].load(program, 0xc003)
+    with open("slot1", "rb") as f:
+        slot1_data = list(f.read())
+    cpu.mm_components["slot1"].mount(lambda a: slot1_data[a], None)
     
     cpu.reset()
     
