@@ -24,8 +24,18 @@ main:
   beq escape
 
   jsr write_char
-  jsr redraw
 
+  ; if a backspace is pressed, redraw the entire screen
+  cmp #DELETE
+  beq mainloop_redraw
+
+  ; else, just draw the new character
+  sta SERIAL
+
+  jmp main
+
+mainloop_redraw:
+  jsr redraw
   jmp main
 
 escape:
