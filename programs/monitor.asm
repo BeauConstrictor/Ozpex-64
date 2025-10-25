@@ -4,14 +4,16 @@ SERIAL = $8002
 CLEAR =    $11
 NEWLINE =  $0a
 
-ROM = $c003
+ROM   = $c003
 SLOT1 = $8003
 SLOT2 = $a003
 
+EXIT_VEC = $fff8
+
 ; memory allocation:
-PRINT = $a0           ; 2 bytes
-BYTE_BUILD = $a2      ; 1 byte
-WORD_LOCATION = $a3   ; 2 bytes
+PRINT         = $a0 ; 2 bytes
+BYTE_BUILD    = $a2 ; 1 byte
+WORD_LOCATION = $a3 ; 2 bytes
 
 reset:
   lda #boot_msg
@@ -136,6 +138,25 @@ _command_jump:
   jsr jump
   rts
 
+boot_msg:
+  .byte CLEAR
+  .byte "Welcome to Ozpex 64 (2025)", NEWLINE
+  .byte "Monitor: READY", NEWLINE
+  .byte NEWLINE
+  .byte 0
+
+unknown_command_mode_msg:
+  .byte " - unknown command!", NEWLINE
+  .byte 0
+
+unknown_exec_location_msg:
+  .byte " - unknown location!", NEWLINE
+  .byte 0
+
+prompt:
+  .byte "? "
+  .byte 0
+
 ; write to a memory address from the serial
 ; modifies: a, x, y
 write:
@@ -257,24 +278,8 @@ _print_loop:
 _print_done:
   rts
 
-boot_msg:
-  .byte CLEAR
-  .byte "Welcome to Ozpex 64 (2025)", NEWLINE
-  .byte "Monitor: READY", NEWLINE
-  .byte NEWLINE
-  .byte 0
-
-unknown_command_mode_msg:
-  .byte " - unknown command!", NEWLINE
-  .byte 0
-
-unknown_exec_location_msg:
-  .byte " - unknown location!", NEWLINE
-  .byte 0
-
-prompt:
-  .byte "? "
-  .byte 0
+  .org EXIT_VEC
+  jmp command_loop
 
 ; reset vector
   .org  $fffc

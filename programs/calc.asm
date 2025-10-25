@@ -3,6 +3,9 @@
 SERIAL  = $8002
 NEWLINE =    $a
 ESCAPE  =   $1b
+CLEAR   =   $11
+
+EXIT_VEC = $fff8
 
 ; memory allocation:
 PRINT      = $50      ; 2 bytes
@@ -12,9 +15,15 @@ OPERATOR   = $20      ; 1 byte
 OPERANDB   = $10      ; 1 byte
 
 main:
-  jsr expression
+  lda #welcome_message
+  sta PRINT
+  lda #>welcome_message
+  sta PRINT+1
+  jsr print
 
-  rts
+loop:
+  jsr expression
+  jmp loop
 
 ; calculate an addition or subtraction, taking input and printing output
 expression:
@@ -67,11 +76,15 @@ _expression_print:
 ; modifies: a (duh)
 get_key:
   lda SERIAL
-  beq get_key ; if no char was typed, check again.
-  sta SERIAL  ; echo back the char.
-  cmp #" "    ; if space was pressed,
-  beq get_key ; wait for the next key.
+  beq get_key       ; if no char was typed, check again.
+  cmp #ESCAPE       ; if escape was pressed,
+  beq _get_key_exit ; return to the system monitor
+  sta SERIAL        ; echo back the char.
+  cmp #" "          ; if space was pressed,
+  beq get_key       ; wait for the next key.
   rts
+_get_key_exit:
+  jmp EXIT_VEC
 
 ; wait for a key and return (in a) the value of a single hex char
 ; modifies: a (duh)
@@ -146,6 +159,21 @@ _print_loop:
   jmp _print_loop
 _print_done:
   rts
+
+welcome_message:
+  .byte CLEAR, ESCAPE, "[7m"
+  .byte " Ozpex 64 Calculator "
+  .byte ESCAPE, "[0m", NEWLINE
+
+  .byte "TIP: Spaces are optional.", NEWLINE
+
+  .byte NEWLINE
+
+  .byte "Examples:", NEWLINE
+  .byte "01 + 02 = 03", NEWLINE
+  .byte "a5 - 02 = a3", NEWLINE
+
+  .byte NEWLINE, 0
 
 equals:
   .byte " = ", 0

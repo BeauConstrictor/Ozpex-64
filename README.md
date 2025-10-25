@@ -117,6 +117,8 @@ A
 
 For more resources on 6502 programming, see [Easy 6502](https://skilldrick.github.io/easy6502/) - an excellent free, online and interactive eBook. Another good resource is Ben Eater's [video series on building and programming his own 6502 computer](https://www.youtube.com/watch?v=LnzuMJLZRdU&list=PLowKtXNTBypFbtuVMUVXNR0z1mu7dp7eH).
 
+Once you can write 6502 assembly, you're 90% of the way there. Next, just learn the APIs for the hardware components and how to integrate your software with the OS, specifically, how to add an exit function to your software. There are two ways to exit from an Ozpex 64 program, the first is to `rts` from the top-level of your program. This is usually the cleanest way to exit, but it is not always possible to exit from the top-level, so instead you can `jmp $fff8` - this address is the 'exit vector' and will re-enter the system monitor, without fully restarting it.
+
 ## Contributing
 
 Please do not make pull requests, as I am working on this project mainly to improve my own knowledge as a programmer on how computers really work, but feel free to fork my repo and do whatever you like with it.
