@@ -43,6 +43,8 @@ _command_wait_for_key:
   beq _command_read
   cmp #"w"
   beq _command_write
+  cmp #"x"
+  beq _command_exec
   cmp #"j"
   beq _command_jump
   cmp #NEWLINE
@@ -58,6 +60,7 @@ _command_wait_for_key:
 
 _command_skip:
   rts
+
 _command_ascii:
   ; this functionality is not included in the read command so that a table of
   ; which ASCII codes are printable is not needed, as some characters may have
@@ -73,10 +76,12 @@ _command_ascii:
   ldx #NEWLINE
   stx SERIAL
   rts
+
 _command_clear:
   lda #$11 ; device control 1 (clear)
   sta SERIAL
   rts
+
 _command_read:
   jsr get_byte
   sta WORD_LOCATION+1
@@ -100,7 +105,40 @@ _command_read:
   stx SERIAL
 
   rts
+
+_command_exec:
+  jsr get_key
+
+  ldx #NEWLINE
+  stx SERIAL
+
+  cmp #"1"
+  beq _command_exec_go_1
+  cmp #"2"
+  beq _command_exec_go_2
+  rts
+_command_exec_go_1
+  jsr _command_exec_go_1_sr
+  rts
+_command_exec_go_1_sr:
+  jmp SLOT1
+_command_exec_go_2
+  jsr _command_exec_go_1_sr
+  rts
+_command_exec_go_2_sr:
+  jmp SLOT2
+
 _command_write:
+  jsr write
+  rts
+
+_command_jump:
+  jsr jump
+  rts
+
+; write to a memory address from the serial
+; modifies: a, x, y
+write:
   jsr get_byte
   sta WORD_LOCATION+1
   jsr get_byte
@@ -114,8 +152,14 @@ _command_write:
   sty SERIAL
   stx SERIAL
 
+  ldx #NEWLINE
+  stx SERIAL
+
   rts
-_command_jump:
+
+; jump to a memory address from the serial
+; modifies: a
+jump:
   jsr get_byte
   sta WORD_LOCATION+1
   jsr get_byte
@@ -127,8 +171,6 @@ _command_jump:
   sta SERIAL
   jsr _command_jump_go
   rts
-  lda #NEWLINE
-  sta SERIAL
 _command_jump_go:
   jmp (WORD_LOCATION)
 

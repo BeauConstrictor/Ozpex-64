@@ -30,6 +30,8 @@ Spaces can be used anywhere in a command and they will be be ignored, so that th
 
 - Jump: typing a `j` followed by a 2 byte memory address (in hex) will start executing a program at that address.
 
+- Execute: a shorthand for Jump, typing an `x` followed by either 1 or 2 will jump to cartridge slot, so you don't need to memorise the addresses.
+
 - Clear: typing a `c` will immediately clear the screen.
 
 
