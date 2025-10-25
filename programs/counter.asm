@@ -1,15 +1,15 @@
   .org $8003
 
-SERIAL = $8002
-CLEAR =    $11
-NEWLINE =  $0a
+SERIAL    = $8002
+BACKSPACE =   $08
+NEWLINE   =   $0a
 
-INTERVAL = 15
+INTERVAL  = 15
 
 reset:
   ldx #"0"
 loop:
-  lda #CLEAR
+  lda #BACKSPACE
   sta SERIAL
   inx
   cpx #"9"+1
@@ -30,7 +30,7 @@ _delay_loop:
   beq _delay_done
   iny
   nop ; nop has quite a long delay in my emulator
-      ; i will add some hardware timer component soon
+      ; i will add some hardware timer component soon (future: this is done now)
   jmp _delay_loop
 _delay_done:
   rts

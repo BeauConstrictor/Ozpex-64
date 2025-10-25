@@ -152,8 +152,8 @@ write:
   sty SERIAL
   stx SERIAL
 
-  ldx #NEWLINE
-  stx SERIAL
+  lda #NEWLINE
+  sta SERIAL
 
   rts
 
@@ -174,7 +174,7 @@ jump:
 _command_jump_go:
   jmp (WORD_LOCATION)
 
-; return (in a) a single key, ignoring spacea
+; return (in a) a single key, ignoring spaces
 ; modifies: a (duh)
 get_key:
   lda SERIAL
@@ -279,4 +279,3 @@ prompt:
 ; reset vector
   .org  $fffc
   .word reset
-  ; .word SLOT1 ; TODO: THIS IS JUST FOR TESTING!
