@@ -20,10 +20,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("-1", "--slot1")
     parser.add_argument("-2", "--slot2")
     
-    parser.add_argument("-r", "--rom", default="roms/monitor.bin")
+    parser.add_argument("-r", "--rom",
+                        default="roms/monitor.bin",
+                        help="overwrite the default monitor rom")
     
     parser.add_argument("-d", "--debug",
-                        action="store_true")
+                        action="store_true",
+                        help="watch the emulator execute individual instructions")
+    
+    parser.add_argument("-n", "--nocrash",
+                        action="store_true",
+                        help="disable crashes on unknown opcodes")
     
     return parser.parse_args()
 
@@ -84,6 +91,7 @@ def main() -> None:
             instr = cpu.execute()
                        
         except NotImplementedError as e:    
+            if args.nocrash: continue
             print("\n\n\033[31m", end="")
             print(f"6502: {e}, execution aborted.", end="")
             print("\033[0m")

@@ -515,6 +515,7 @@ class Cpu:
         self.pc += 1
         
         if opcode not in self.isa.opcodes:
+            self.pc += 1
             raise NotImplementedError(f"Opcode 0x{opcode:02x} not implemented")
         
         instr_func, addr_mode_func = self.isa.opcodes[opcode]

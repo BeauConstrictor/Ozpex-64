@@ -122,8 +122,8 @@ _command_exec_go_1
   rts
 _command_exec_go_1_sr:
   jmp SLOT1
-_command_exec_go_2
-  jsr _command_exec_go_1_sr
+_command_exec_go_2:
+  jsr _command_exec_go_2_sr
   rts
 _command_exec_go_2_sr:
   jmp SLOT2
