@@ -9,38 +9,67 @@ NEWLINE =    $0a
 ; memory allocation:
 LAST_TIMER = $50        ; 1 byte
 
-reset:
-    lda #4 ; 4ms per time unit. only high byte is checked so this becomes 1s
-           ; per time unit.
-    sta TIMER+1
+main:
+  ; tell the timer to output in units of 4ms. only the high byte is checked so
+  ; this measures in 1024ms, close enough to 1s
+  lda #4;ms
+  sta TIMER+1
 
-    sta TIMER ; start timer
-
-    lda #$00
-    sta LAST_TIMER ; make sure that it prints the first time around
+  ; write any value to start the timer
+  sta TIMER
 
 timer:
-    lda SERIAL
-    bne quit
+  ; only output if the timer has changed
+  lda TIMER+1
+  cmp LAST_TIMER
+  beq timer
+  sta LAST_TIMER
 
-    ldy TIMER+1
-    cpy LAST_TIMER
-    beq timer
+  ; output the timer
+  jsr print
 
-    jsr print
-    sty LAST_TIMER
-    jmp timer
+  ; check the timer again
+  jmp timer
 
-quit:
-  ; return to the system monitor
-  lda NEWLINE
+; undo the last print & output the a register
+print:
+  ldx #BACKSPACE
+  stx SERIAL
+  stx SERIAL
+
+  jsr hex_byte
+  stx SERIAL
+  sty SERIAL
+
   rts
 
-print:
-    ; clear the screen and print the current timer from the y reg
-    lda #BACKSPACE
-    sta SERIAL
-    tya
-    adc #"0" - 2
-    sta SERIAL
-    rts
+; return (in a) the a register as hex
+; modifies: a (duh)
+hex_nibble:
+  cmp #10
+  bcc _hex_nibble_digit
+  clc
+  adc #"a" - 10
+  rts
+_hex_nibble_digit:
+  adc #"0"
+  rts
+
+; return (in x & y) the a register as hex
+; modifies: x, y, a
+hex_byte:
+  pha ; save the full value for later
+  ; get just the MSN
+  lsr
+  lsr
+  lsr
+  lsr
+  jsr hex_nibble
+  tax ; but the hex char for the MSN in x
+
+  pla ; bring back the full value
+  and #$0f ; get just the LSN
+  jsr hex_nibble
+  tay ; but the hex char for the LSN in y
+
+  rts
