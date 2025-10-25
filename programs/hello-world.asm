@@ -22,9 +22,6 @@ reset:
   sta PRINT + 1
   jsr print
 
-done:
-  lda SERIAL
-  beq done
   rts
 
 ; write the address of a null-terminated string to PRINT

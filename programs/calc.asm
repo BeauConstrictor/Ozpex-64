@@ -11,71 +11,68 @@ A = 5
 B = 2
 
 reset:
-    ; A
-    lda #"0" + A
-    sta SERIAL
-    
-    ; +
-    lda #add
-    sta PRINT
-    lda #>add
-    sta PRINT+1
-    jsr print
-    
-    ; B
-    lda #"0" + B
-    sta SERIAL
-    
-    ; =
-    lda #equals
-    sta PRINT
-    lda #>equals
-    sta PRINT+1
-    jsr print
+  ; A
+  lda #"0" + A
+  sta SERIAL
+  
+  ; +
+  lda #add
+  sta PRINT
+  lda #>add
+  sta PRINT+1
+  jsr print
+  
+  ; B
+  lda #"0" + B
+  sta SERIAL
+  
+  ; =
+  lda #equals
+  sta PRINT
+  lda #>equals
+  sta PRINT+1
+  jsr print
 
-    ; A + B
-    lda #"0" + A
-    adc #B
-    sta SERIAL
+  ; A + B
+  lda #"0" + A
+  adc #B
+  sta SERIAL
 
-    ; \n
-    lda #NEWLINE
-    sta SERIAL
+  ; \n
+  lda #NEWLINE
+  sta SERIAL
 
-    ; A
-    lda #"0" + A
-    sta SERIAL
-    
-    ; -
-    lda #minus
-    sta PRINT
-    lda #>minus
-    sta PRINT+1
-    jsr print
-    
-    ; B
-    lda #"0" + B
-    sta SERIAL
-    
-    ; =
-    lda #equals
-    sta PRINT
-    lda #>equals
-    sta PRINT+1
-    jsr print
+  ; A
+  lda #"0" + A
+  sta SERIAL
+  
+  ; -
+  lda #minus
+  sta PRINT
+  lda #>minus
+  sta PRINT+1
+  jsr print
+  
+  ; B
+  lda #"0" + B
+  sta SERIAL
+  
+  ; =
+  lda #equals
+  sta PRINT
+  lda #>equals
+  sta PRINT+1
+  jsr print
 
-    ; A - B
-    lda #"0" + A
-    sec
-    sbc #B
-    sta SERIAL
+  ; A - B
+  lda #"0" + A
+  sec
+  sbc #B
+  sta SERIAL
 
-    lda #NEWLINE
-    sta SERIAL
-    
-done:
-  lda SERIAL
-  beq done
+  lda #NEWLINE
+  sta SERIAL
+  
   rts
 
 print:

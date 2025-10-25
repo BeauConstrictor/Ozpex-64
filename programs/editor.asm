@@ -1,64 +1,169 @@
   .org $8003
 
-SERIAL = $8002
+SERIAL   = $8002
+CLEAR    =   $11
+DELETE   =   $7f
+NEWLINE  =   $0a
+ESCAPE   =   $1b
+
+SLOT2    = $a003
+SLOT2END = $c002
 
 ; memory allocation:
-PRINT = $50           ; 2 bytes
+BUFPTR =   $20        ; 1 byte
+BUFFER = $0201        ; 256 bytes
 
-BACKSPACE = $08
-DELETE =    $7f
-NEWLINE =   $0a
-ESCAPE =    $1b
-
-reset:
-  ; wait in a loop for a key to be pressed and put it in a
+  jsr init
+  jsr load_buffer
+  jsr redraw
+main:
   lda SERIAL
-  beq reset
+  beq main
 
-  ; escape has to be handled separately so that we can rts from the program
-  ; itself
   cmp #ESCAPE
-  beq done
+  beq escape
 
-  ; handle the keypress
-  jsr character
+  jsr write_char
+  jsr redraw
 
-  ; go back and wait for the next key
-  jmp reset
+  jmp main
 
-done:
+escape:
+  jsr save_buffer
+
   lda #NEWLINE
   sta SERIAL
+
   rts
 
-; handle a single keypress (from the a register)
-; modifies: x, y
-character:
-  cmp #DELETE
-  beq _character_backspace
+; clear & draw the screen contents
+; modifies: a, x
+redraw:
+  lda #CLEAR
+  sta SERIAL
+  jsr print_message
+  jsr print_buffer
+  rts
 
-  ; just output or keys directly
+; initialise memory
+init:
+  lda #0
+  sta BUFPTR
+  rts
+
+; append the character in the a register to the text buffer
+; modifies: x
+write_char;
+  cmp #DELETE
+  beq _write_char_delete
+
+  ldx BUFPTR
+  inx
+  sta BUFFER,x
+  inc BUFPTR
+  rts
+_write_char_delete:
+  dec BUFPTR
+  rts
+
+; display the contents of the text buffer
+; modifies: a, x
+print_buffer:
+  ; will immediately wrap because of the increment
+  ldx #$ff
+_print_buffer_loop:
+  inx
+  lda BUFFER,x
   sta SERIAL
 
+  ; print up to the end of the buffer
+  cpx BUFPTR
+  bne _print_buffer_loop
   rts
 
-_character_backspace:
-  ldx #BACKSPACE
-  stx SERIAL
-  ldy #" "
-  sty SERIAL
-  stx SERIAL
+; write the contents of slot to to the text buffer
+; modifies: a, x
+save_buffer:
+  ; will immediately wrap because of the increment
+  ldx #$ff
+_save_buffer_loop:
+  inx
+
+  lda BUFFER,x
+  sta SLOT2,x
+
+  lda BUFPTR
+  sta SLOT2END
+
+  cpx BUFPTR
+  bne _save_buffer_loop
   rts
 
-; print a null-terminated string pointed to by PRINT
-; modifies: a, y
-print:
-  ldy #0
+; write the contents of the text buffer to slot 2
+; modifies: a, x
+load_buffer:
+  lda SLOT2END
+  sta BUFPTR
+
+  ; will immediately wrap because of the increment
+  ldx #$ff
+_load_buffer_loop:
+  inx
+
+  lda SLOT2,x
+  sta BUFFER,x
+
+  lda BUFPTR
+  sta SLOT2END
+
+  cpx BUFPTR
+  bne _load_buffer_loop
+  rts
+
+; print the title message
+; modifies: a, x
+print_message:
+  ldx #0
 _print_loop:
-  lda (PRINT),y
+  lda message,x
   beq _print_done
   sta SERIAL
-  iny
+  inx
   jmp _print_loop
 _print_done:
   rts
+
+; return (in a) the a register as hex
+; modifies: a (duh)
+hex_nibble:
+  cmp #10
+  bcc _hex_nibble_digit
+  clc
+  adc #"a" - 10
+  rts
+_hex_nibble_digit:
+  adc #"0"
+  rts
+
+; return (in x & y) the a register as hex
+; modifies: x, y, a
+hex_byte:
+  pha ; save the full value for later
+  ; get just the MSN
+  lsr
+  lsr
+  lsr
+  lsr
+  jsr hex_nibble
+  tax ; but the hex char for the MSN in x
+
+  pla ; bring back the full value
+  and #$0f ; get just the LSN
+  jsr hex_nibble
+  tay ; but the hex char for the LSN in y
+
+  rts
+
+message:
+  .byte "Ozpex 64 Text Editor", NEWLINE
+  .byte "Press ESC to save to Slot 2 and exit.", NEWLINE, NEWLINE, 0

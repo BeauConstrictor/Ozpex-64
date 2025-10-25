@@ -1,4 +1,5 @@
 import argparse
+from sys import stderr
 from time import sleep
 
 from components.cpu import Cpu
@@ -7,14 +8,42 @@ from components.rom import Rom
 from components.timer import Timer
 from components.serial import SerialOutput
 from components.expansion_slot import ExpansionSlot
+from components.expansion_slot import RomExpansion, BbRamExpansion
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        prog="ozpex-64",
+        description = "A fictional 8-bit computer and emulator based on the"
+                      "6502",
+    )
+                         
+    parser.add_argument("-1", "--slot1")
+    parser.add_argument("-2", "--slot2")
     
-    parser.add_argument("--debug",
+    parser.add_argument("-d", "--debug",
                         action="store_true")
     
     return parser.parse_args()
+
+def load_slot(literal: str, slot: ExpansionSlot) -> None:
+    parts = literal.split(":")
+    expansion = parts[0]
+    if len(parts) > 1: arg = ":".join(parts[1:])
+    else: arg = None
+    
+    expansions = {
+        "rom":   RomExpansion,
+        "bbram": BbRamExpansion,
+    }
+    
+    if expansions.get(expansion, None) is None:
+        print("\n\n\033[31m", end="")
+        print(f"6502: unknown expansion card: '{expansion}'.",
+              "\033[0m", file=stderr)
+        exit(1)
+    
+    e = expansions[expansion](arg)
+    slot.mount(e.read, e.write)
 
 def main() -> None:
     args = parse_args()
@@ -40,10 +69,9 @@ def main() -> None:
     with open("rom", "rb") as f:
         rom = list(f.read())
     cpu.mm_components["rom"].load(rom, 0xc003)
-    
-    with open("slot1", "rb") as f:
-        slot1_data = list(f.read())
-    cpu.mm_components["slot1"].mount(lambda a: slot1_data[a], None)
+        
+    if args.slot1: load_slot(args.slot1, cpu.mm_components["slot1"])
+    if args.slot2: load_slot(args.slot2, cpu.mm_components["slot2"])
     
     cpu.reset()
     

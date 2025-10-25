@@ -1,4 +1,5 @@
 from typing import Callable
+import os.path
 
 from components.mm_component import MemoryMappedComponent
 
@@ -24,3 +25,55 @@ class ExpansionSlot(MemoryMappedComponent):
     def write(self, addr: int, val: int) -> None:
         if self.mount_write is None: return
         self.mount_write(addr - self.start, val)
+        
+class RomExpansion:
+    def __init__(self, name: str) -> None:
+        path = os.path.join("roms", name + ".bin")
+        
+        self.addresses = bytearray(0x2000)
+        
+        with open(path, "rb") as f:
+            data = f.read()
+        addr = 0
+        for d in data:
+            self.addresses[addr] = d
+            addr += 1
+        
+    def read(self, addr: int) -> int:
+        return self.addresses[addr] & 0xff
+    
+    def write(self, addr: int, val: int) -> None:
+        pass
+
+class RamExpansion:
+    def __init__(self, name: str) -> None:
+        self.path = os.path.join("roms", name + ".bin")
+        self.addresses = bytearray(0x2000)
+
+    def read(self, addr: int) -> int:
+        return self.addresses[addr] & 0xff
+
+    def write(self, addr: int, val: int) -> None:
+        self.addresses[addr] = val & 0xff
+    
+class BbRamExpansion:
+    def __init__(self, name: str) -> None:
+        self.path = os.path.join("bbrams", name + ".bin")
+        self.addresses = bytearray(0x2000)
+
+        if os.path.exists(self.path):
+            with open(self.path, "rb") as f:
+                data = f.read()
+            self.addresses[:len(data)] = data
+        else:
+            with open(self.path, "wb") as f:
+                f.write(self.addresses)
+
+    def read(self, addr: int) -> int:
+        return self.addresses[addr] & 0xff
+
+    def write(self, addr: int, val: int) -> None:
+        self.addresses[addr] = val & 0xff
+        with open(self.path, "r+b") as f:
+            f.seek(addr)
+            f.write(bytes([val & 0xff]))

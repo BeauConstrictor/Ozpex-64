@@ -82,6 +82,14 @@ class Isa:
             0xe8: (self.inx, None),
             0xc8: (self.iny, None),
             
+            0xc6: (self.dec, self.addr_zero_page),
+            0xd6: (self.dec, self.addr_zero_page_x),
+            0xce: (self.dec, self.addr_absolute),
+            0xde: (self.dec, self.addr_absolute_x),
+            
+            0xca: (self.dex, None),
+            0x88: (self.dey, None),
+            
             0x20: (self.jsr, self.addr_absolute),
             0x60: (self.rts, None),
             
@@ -297,6 +305,15 @@ class Isa:
         self.cpu.rx = self.add_val(self.cpu.rx, 1)
     def iny(self, addr: int, opcode: int) -> None:
         self.cpu.ry = self.add_val(self.cpu.ry, 1)
+        
+    def dec(self, addr: int, opcode: int) -> None:
+        val = self.cpu.fetch(addr)
+        val = self.add_val(val, -1)
+        self.cpu.write(addr, val)
+    def dex(self, addr: int, opcode: int) -> None:
+        self.cpu.rx = self.add_val(self.cpu.rx, -1)
+    def dey(self, addr: int, opcode: int) -> None:
+        self.cpu.ry = self.add_val(self.cpu.ry, -1)
         
     def jsr(self, addr: int, opcode: int) -> None:
         rts_bytes = break_word(self.cpu.pc - 1) # or is it + 1?

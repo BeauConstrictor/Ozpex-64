@@ -218,3 +218,4 @@ prompt:
 ; reset vector
   .org  $fffc
   .word reset
+  ; .word SLOT1 ; TODO: THIS IS JUST FOR TESTING!
