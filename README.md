@@ -120,3 +120,7 @@ For more resources on 6502 programming, see [Easy 6502](https://skilldrick.githu
 ## Contributing
 
 Please do not make pull requests, as I am working on this project mainly to improve my own knowledge as a programmer on how computers really work, but feel free to fork my repo and do whatever you like with it.
+
+## Todos
+
+- [ ] At some point, implement a syscall mechanism using the `brk` instruction so that I'm not copy-pasting hex display rountines everywhere.
