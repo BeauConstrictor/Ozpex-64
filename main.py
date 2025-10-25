@@ -20,6 +20,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("-1", "--slot1")
     parser.add_argument("-2", "--slot2")
     
+    parser.add_argument("-r", "--rom", default="roms/monitor.bin")
+    
     parser.add_argument("-d", "--debug",
                         action="store_true")
     
@@ -66,7 +68,7 @@ def main() -> None:
         "rom": Rom(0xc003, 0xffff),
     })
 
-    with open("rom", "rb") as f:
+    with open(args.rom, "rb") as f:
         rom = list(f.read())
     cpu.mm_components["rom"].load(rom, 0xc003)
         

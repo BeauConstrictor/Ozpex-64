@@ -37,6 +37,8 @@ _command_wait_for_key:
 
   cmp #"c"
   beq _command_clear
+  cmp #"a"
+  beq _command_ascii
   cmp #"r"
   beq _command_read
   cmp #"w"
@@ -55,6 +57,21 @@ _command_wait_for_key:
   rts
 
 _command_skip:
+  rts
+_command_ascii:
+  ; this functionality is not included in the read command so that a table of
+  ; which ASCII codes are printable is not needed, as some characters may have
+  ; confusing effects when printed directly, such as $11 (clears the screen).
+
+  jsr get_byte
+  ldx #NEWLINE
+  stx SERIAL
+  ldx #"'"
+  stx SERIAL
+  sta SERIAL
+  stx SERIAL
+  ldx #NEWLINE
+  stx SERIAL
   rts
 _command_clear:
   lda #$11 ; device control 1 (clear)
@@ -110,6 +127,8 @@ _command_jump:
   sta SERIAL
   jsr _command_jump_go
   rts
+  lda #NEWLINE
+  sta SERIAL
 _command_jump_go:
   jmp (WORD_LOCATION)
 
@@ -200,6 +219,7 @@ boot_msg:
   .byte CLEAR
   .byte "Welcome to Ozpex 64 (2025)", NEWLINE
   .byte "Monitor: READY", NEWLINE
+  .byte NEWLINE
   .byte 0
 
 unknown_command_mode_msg:
@@ -211,7 +231,6 @@ unknown_exec_location_msg:
   .byte 0
 
 prompt:
-  .byte NEWLINE
   .byte "? "
   .byte 0
 

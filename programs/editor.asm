@@ -133,37 +133,8 @@ _print_loop:
 _print_done:
   rts
 
-; return (in a) the a register as hex
-; modifies: a (duh)
-hex_nibble:
-  cmp #10
-  bcc _hex_nibble_digit
-  clc
-  adc #"a" - 10
-  rts
-_hex_nibble_digit:
-  adc #"0"
-  rts
-
-; return (in x & y) the a register as hex
-; modifies: x, y, a
-hex_byte:
-  pha ; save the full value for later
-  ; get just the MSN
-  lsr
-  lsr
-  lsr
-  lsr
-  jsr hex_nibble
-  tax ; but the hex char for the MSN in x
-
-  pla ; bring back the full value
-  and #$0f ; get just the LSN
-  jsr hex_nibble
-  tay ; but the hex char for the LSN in y
-
-  rts
-
 message:
-  .byte "Ozpex 64 Text Editor", NEWLINE
-  .byte "Press ESC to save to Slot 2 and exit.", NEWLINE, NEWLINE, 0
+  .byte ESCAPE, "[7m"
+  .byte " Ozpex 64 Text Editor "
+  .byte ESCAPE, "[0m", NEWLINE
+  .byte "TIP: press ESC to save to CS2 and quit.", NEWLINE, NEWLINE, 0
