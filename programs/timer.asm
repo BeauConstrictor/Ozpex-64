@@ -38,7 +38,10 @@ print:
   stx SERIAL
 
   jsr hex_byte
+  cpx #"0"
+  beq skip_high_byte
   stx SERIAL
+skip_high_byte:
   sty SERIAL
 
   rts
