@@ -12,7 +12,7 @@ $ cd Ozpex-64
 $ python3 main.py
 ```
 
-This will install Ozpex 64 and start the emulator. You should see a prompt that says 'Welcome to Ozpex 64`, which is a message from the computer's built-in machine monitor. This monitor has a few simple functions: it lets you run programs from the cartridge slots and debug them afterward by inspecting & modifying memory. You can also test hardware so make sure it is functioning correctly by reading and writing to their respective memory addresses.
+This will install Ozpex 64 and start the emulator. You should see a prompt that says 'Welcome to Ozpex 64`, which is a message from the computer's built-in machine monitor. This monitor has a few simple functions: it lets you run programs from the cartridge slots and debug them afterward by inspecting & modifying memory. You can also test hardware to make sure it is functioning correctly by reading and writing to their respective memory addresses.
 
 ### Machine Monitor
 
