@@ -126,7 +126,7 @@ _command_jump:
 
 boot_msg:
   .byte CLEAR, ESCAPE, "[7m"
-  .byte " O64 Monitor v1.0.0 "
+  .byte " O64 Monitor v1.1.0 "
   .byte ESCAPE, "[0m", NEWLINE
 
   .byte "Welcome to Ozpex 64!", NEWLINE

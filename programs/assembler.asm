@@ -207,7 +207,7 @@ _print_done:
 
 welcome_message:
   .byte CLEAR, ESCAPE, "[7m"
-  .byte " O64 Assembler v1.0.0 "
+  .byte " O64 Assembler v1.0.1 "
   .byte ESCAPE, "[0m", NEWLINE
 
   .byte "TIP: Use '@' to move to a different address", NEWLINE
