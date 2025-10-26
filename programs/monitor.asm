@@ -2,6 +2,7 @@
 
 SERIAL = $8002
 CLEAR =    $11
+ESCAPE  =   $1b
 NEWLINE =  $0a
 
 ROM   = $c003
@@ -139,9 +140,11 @@ _command_jump:
   rts
 
 boot_msg:
-  .byte CLEAR
-  .byte "Welcome to Ozpex 64 (2025)", NEWLINE
-  .byte "Monitor: READY", NEWLINE
+  .byte CLEAR, ESCAPE, "[7m"
+  .byte " O64 Monitor v1.0.0 "
+  .byte ESCAPE, "[0m", NEWLINE
+
+  .byte "Welcome to Ozpex 64!", NEWLINE
   .byte NEWLINE
   .byte 0
 

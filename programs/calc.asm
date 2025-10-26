@@ -164,7 +164,7 @@ _print_done:
 
 welcome_message:
   .byte CLEAR, ESCAPE, "[7m"
-  .byte " Ozpex 64 Calculator "
+  .byte " O64 Calculator v1.0.0 "
   .byte ESCAPE, "[0m", NEWLINE
 
   .byte "TIP: Spaces are optional.", NEWLINE

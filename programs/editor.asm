@@ -73,7 +73,12 @@ write_char;
   inc BUFPTR
   rts
 _write_char_delete:
+  ; if the buffer is empty, don't let it wrap
   dec BUFPTR
+  cmp #$00
+  bne _write_char_delete_done
+  inc BUFPTR
+_write_char_delete_done:
   rts
 
 ; display the contents of the text buffer
@@ -145,6 +150,6 @@ _print_done:
 
 message:
   .byte ESCAPE, "[7m"
-  .byte " Ozpex 64 Text Editor "
+  .byte " O64 Editor v1.0.0 "
   .byte ESCAPE, "[0m", NEWLINE
   .byte "TIP: press ESC to save to CS2 and quit.", NEWLINE, NEWLINE, 0
