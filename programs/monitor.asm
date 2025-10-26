@@ -1,14 +1,16 @@
   .org $c003
 
-SERIAL = $8002
-CLEAR =    $11
-ESCAPE  =   $1b
-NEWLINE =  $0a
+; ascii codes:
+SERIAL    = $8002
+CLEAR     =   $11
+ESCAPE    =   $1b
+NEWLINE   =   $0a
+BACKSPACE =   $08
 
-ROM   = $c003
-SLOT1 = $8003
-SLOT2 = $a003
-
+; memory map:
+ROM      = $c003
+SLOT1    = $8003
+SLOT2    = $a003
 EXIT_VEC = $fff8
 
 ; memory allocation:
@@ -59,6 +61,7 @@ _command_wait_for_key:
   lda #>unknown_command_mode_msg
   sta PRINT+1
   jsr print
+
   rts
 
 _command_skip:
@@ -110,26 +113,8 @@ _command_read:
   rts
 
 _command_exec:
-  jsr get_key
-
-  ldx #NEWLINE
-  stx SERIAL
-
-  cmp #"1"
-  beq _command_exec_go_1
-  cmp #"2"
-  beq _command_exec_go_2
+  jsr exec
   rts
-_command_exec_go_1
-  jsr _command_exec_go_1_sr
-  rts
-_command_exec_go_1_sr:
-  jmp SLOT1
-_command_exec_go_2:
-  jsr _command_exec_go_2_sr
-  rts
-_command_exec_go_2_sr:
-  jmp SLOT2
 
 _command_write:
   jsr write
@@ -149,7 +134,7 @@ boot_msg:
   .byte 0
 
 unknown_command_mode_msg:
-  .byte " - unknown command!", NEWLINE
+  .byte BACKSPACE, " ", BACKSPACE, BACKSPACE, BACKSPACE
   .byte 0
 
 unknown_exec_location_msg:
@@ -159,6 +144,28 @@ unknown_exec_location_msg:
 prompt:
   .byte "? "
   .byte 0
+
+exec:
+  jsr get_key
+
+  ldx #NEWLINE
+  stx SERIAL
+
+  cmp #"1"
+  beq _exec_go_1
+  cmp #"2"
+  beq _exec_go_2
+  rts
+_exec_go_1
+  jsr _exec_go_1_sr
+  rts
+_exec_go_1_sr:
+  jmp SLOT1
+_exec_go_2:
+  jsr _exec_go_2_sr
+  rts
+_exec_go_2_sr:
+  jmp SLOT2
 
 ; write to a memory address from the serial
 ; modifies: a, x, y

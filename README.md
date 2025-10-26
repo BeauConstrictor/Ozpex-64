@@ -14,59 +14,11 @@ $ python3 main.py
 
 This will install Ozpex 64 and start the emulator. You should see a prompt that says 'Welcome to Ozpex 64`, which is a message from the computer's built-in machine monitor. This monitor has a few simple functions: it lets you run programs from the cartridge slots and debug them afterward by inspecting & modifying memory. You can also test hardware to make sure it is functioning correctly by reading and writing to their respective memory addresses.
 
+Read the <MANUAL.md> to go further.
+
 ### Machine Monitor
 
-The monitor included in ROM is quite unusual, but allows you to work quickly once you get used to it. Commands are interpreted as you type, so the first character will immediately start whichever command you choose, which will then accept arguments as you type them and immediately execute once it has recieved enough information.
-
-Spaces can be used anywhere in a command and they will be be ignored, so that they can be used to visually separate arguments.
-
-### Commands
-
-- Read: typing an `r` followed by a 2 byte memory address (in hex) will output the value at that address in both hex and ASCII.
-
-- ASCII: typing an `a` followed by a byte in hex will output which ASCII character that byte represents.
-
-- Write: typing a `w` followed by a 2 byte memory address (also in hex), followed by a 1 byte value will write that value to the memory location.
-
-- Jump: typing a `j` followed by a 2 byte memory address (in hex) will start executing a program at that address.
-
-- Execute: a shorthand for Jump, typing an `x` followed by either 1 or 2 will jump to cartridge slot, so you don't need to memorise the addresses.
-
-- Clear: typing a `c` will immediately clear the screen.
-
-
-## Hardware
-
-This is the computer's memory map:
-
-```plain
-RAM: 0x0000 -> 0x7fff
-Timer: 0x8000 + 0x8001
-Serial: 0x8002
-Slot 1: 0x8003 -> 0xa002
-Slot 2: 0xa003 -> 0xc002
-ROM: 0xc003 -> 0xffff
-```
-
-### Timer
-
-The hardware timer is very simple to interface with and does not emit interrupts, so it must be handled through polling.
-
-Writing (any value) to address `0x8000` (register A) will cause the timer to start, so that reading from the timer (discussed below) will cause it to emit the amount of time elapsed since this start point.
-
-Writing to address `0x8001` (register B) will set the units of the timer. Essentially, the timer will divide the time elapsed (in milliseconds) by this value whenever you read it, allowing you to increase the maximum length of time (up to 4.6 hours) that can fit into 16 bits, at the cost of precision - the timer will wrap if it exceeds this value.
-
-Reading from register B will return the high byte of the time elapsed since the last write to register A. Reading from register A will return the low byte.
-
-### Serial
-
-The UART provides a simple interface to the computer, but, like the timer, does not generate interrupts, so polling must be used to check for keypresses.
-
-Writing to address `0x8002` will cause the byte written to be sent to the terminal. There is no need to flush output, and it will appear immediately on the terminal
-
-Reading to that address will return the last character that was typed, and overwrite this value with nul to prevent duplicate reads (this assumes that the nul character will never be typed manually, as it would have to be ignored, but simplifies reading logic somewhat).
-
-The UART has special handling for ASCII device control 1, which simply clears the screen and returns the cursor to the home position. There is potential for more in the future.
+The monitor included in ROM is quite unusual, but allows you to work quickly once you get used to it (so long as you don't make any typos). Commands are interpreted as you type, so the first character will immediately start whichever command you choose, which will then accept arguments as you type them and immediately execute once it has recieved enough information.
 
 ## Emulator
 
@@ -107,17 +59,13 @@ This program simply outputs an uppercase `A` to the output. If you put this file
 
 ```sh
 $ python3 main.py -1 rom:myprog
-Welcome to Ozpex 64 (2025)
-Monitor: READY
+ O64 Monitor v1.0.0
+Welcome to Ozpex 64!
 
-? j 8003
-A
 ? █
 ```
 
 For more resources on 6502 programming, see [Easy 6502](https://skilldrick.github.io/easy6502/) - an excellent free, online and interactive eBook. Another good resource is Ben Eater's [video series on building and programming his own 6502 computer](https://www.youtube.com/watch?v=LnzuMJLZRdU&list=PLowKtXNTBypFbtuVMUVXNR0z1mu7dp7eH).
-
-Once you can write 6502 assembly, you're 90% of the way there. Next, just learn the APIs for the hardware components and how to integrate your software with the OS, specifically, how to add an exit function to your software. There are two ways to exit from an Ozpex 64 program, the first is to `rts` from the top-level of your program. This is usually the cleanest way to exit, but it is not always possible to exit from the top-level, so instead you can `jmp $fff8` - this address is the 'exit vector' and will re-enter the system monitor, without fully restarting it.
 
 ## Contributing
 

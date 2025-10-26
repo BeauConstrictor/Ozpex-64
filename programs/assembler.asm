@@ -5,9 +5,11 @@ SERIAL   = $8002
 EXIT_VEC = $fff8
 
 ; ascii codes:
-ESCAPE  =   $1b
-CLEAR   =   $11
-NEWLINE =   $0a
+ESCAPE    = $1b
+CLEAR     = $11
+NEWLINE   = $0a
+DELETE    = $7f
+BACKSPACE = $08
 
 ; memory allocation:
 PRINT        = $50      ; 2 bytes
@@ -114,9 +116,20 @@ _get_key_new_addr:
 
   jmp get_key
 _get_key_comment:
-  lda SERIAL   ; read a key.
-  cmp #NEWLINE ; onyl if it's a newlne,
-  beq get_key  ; exit the comment.
+  lda SERIAL                ; read a key.
+  sta SERIAL
+  cmp #NEWLINE              ; only if it's a newline,
+  beq _get_key_newline      ; exit the comment
+
+  cmp #DELETE               ; if they pressed backspace,
+  bne _get_key_comment
+  lda #BACKSPACE            ; move cursor back
+  sta SERIAL
+  lda #" "                  ; clear character
+  sta SERIAL     
+  lda #BACKSPACE            ; move cursor back twice
+  sta SERIAL
+  jmp _get_key_comment
 
 ; wait for a key and return (in a) the value of a single hex char
 ; modifies: a (duh)
