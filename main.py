@@ -111,6 +111,6 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         print("\n\n\033[31m", end="")
-        print(f"6502: ctrl+c: exit.", end="")
+        print(f"emu: ctrl+c exit.", end="")
         print("\033[0m")
         exit(0)
