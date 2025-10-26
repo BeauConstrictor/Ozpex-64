@@ -84,6 +84,8 @@ get_key:
   beq get_key       ; wait for the next key.
   rts
 _get_key_exit:
+  lda #NEWLINE
+  sta SERIAL
   jmp EXIT_VEC
 
 ; wait for a key and return (in a) the value of a single hex char
