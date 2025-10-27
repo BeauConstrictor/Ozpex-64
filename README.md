@@ -24,6 +24,10 @@ The monitor included in ROM is quite unusual, but allows you to work quickly onc
 
 The emulator is a work in progress that develops alongside the software for the computer, so is not yet a complete 6502 emulator. Nevertheless, you can use it to try out the computer by typing `python3 main.py` in the terminal. This will start the computer with both cartridge slots empty. The emulator uses your terminal window as the serial output for programs.
 
+## Logisim Implementation
+
+This computer has also been implemented in Logisim Evolution, using a [premade 6502 core](https://github.com/SolraBizna/logi6502). While the computer is functional, the I/O is terrible, as the Logisim TTY does not support ANSI escape codes, and the Logisim keyboard does not support the escape key, so there is no way to exit software that uses that key (all of the software designed by me), and there is no way to save your work to BBSRAM in the text editor, because that also relies on the escape key. You can find this implementation in the `logisim` directory of this repo, along with the scripts to convert roms into an appropriate format.
+
 ### Syntax
 
 The most common options you will use with the emulator are `-1` and `-2`, which allow you to specify what goes in cartridge slots 1 & 2, respectively. The emulator currently supports two types of cartridge: `rom`, which will load from `roms/<file>.bin` and `bbram` (battery-backed ram, a form of persistent storage), which will load from `bbrams/<file>.bin`. The syntax is as follows:
