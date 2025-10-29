@@ -2,6 +2,8 @@ from datetime import timedelta
 from typing import Optional
 from time import sleep
 
+from random import randint
+
 from components.mm_component import MemoryMappedComponent
 
 MAX_ADDR = 65535
@@ -431,11 +433,11 @@ class Cpu:
             
         self.isa = Isa(self)
         
-        self.pc = 0x00
-        self.sp = 0xfd
-        self.ra = 0x00
-        self.rx = 0x00
-        self.ry = 0x00
+        self.pc = randint(0, 0xff)
+        self.sp = randint(0, 0xff)
+        self.ra = randint(0, 0xff)
+        self.rx = randint(0, 0xff)
+        self.ry = randint(0, 0xff)
         
         self.carry = False
         self.zero = False

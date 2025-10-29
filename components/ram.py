@@ -1,3 +1,4 @@
+from random import randint
 from components.mm_component import MemoryMappedComponent
 
 class Ram(MemoryMappedComponent):
@@ -6,6 +7,9 @@ class Ram(MemoryMappedComponent):
         self.end = max_addr
         
         self.addresses = bytearray(self.end - self.start + 1)
+        
+        for i in range(len(self.addresses)):
+            self.addresses[i] = randint(0, 0xff)
         
     def load(self, data: list[int], start_addr: int) -> None:
         addr = start_addr
