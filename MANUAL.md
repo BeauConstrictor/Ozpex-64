@@ -1,44 +1,39 @@
 # Ozpex 64 Manual
 
-Through this guide, you will learn how to set up your Ozpex 64 through emulation, how to run software on it, and how to write your own.
+This guide explains how to set up the Ozpex 64 emulator, run software on it, and develop your own programs.
 
-## System
+## System Overview
 
-The Ozpex 64 is a fictional computer built on the 6502 microprocessor. It has 32K of built-in RAM for programs, a 16K ROM for the built-in software, a serial port for I/O and a hardware timer for precise timing. It also includes two 8K cartridge slots for separate programs, hardware expansions, and user data.
+The Ozpex 64 is a fictional computer based on the 6502 microprocessor. It includes:
+
+- 32 KB of RAM for user programs
+- 16 KB of ROM containing built-in system software
+- A serial port for input and output
+- A hardware timer for precise timing
+- Two 8 KB cartridge slots for external programs, expansions, or user data
 
 ## Initial Setup
 
-Once you have [downloaded Ozpex 64 from Github](https://github.com/BeauConstrictor/Ozpex-64), you can start the emulator with this command:
-
+Install and try Ozpex 64 like this:
 ```sh
-$ python3 main.py
- O64 Monitor v1.0.0
-Welcome to Ozpex 64!
-
-? █
+$ git clone https://github.com/BeauConstrictor/Ozpex-64
+$ cd ozpex-64
+$ python main.py
 ```
 
-After pressing enter, you should see the a welcome message from the computer, and a prompt `?`, waiting for you to enter a command. This is the *Machine Monitor*, and it is what you will always first see when you start the computer.
+You should see a welcome message and a prompt, indicating that the computer has booted, and the included monitor is running.
 
 ## The Monitor
 
-The Monitor itself is very simple, with just 6 included commands:
+The monitor is a program built into rom that runs automatically on boot. It allows you to efficiently inspect memory, test hardware and write and run programs.
 
-- Read: typing an `r` followed by a 2 byte memory address (in hex) will output the value at that address in both hex and ASCII.
+When started, the monitor will begin at an random memory address. Use the `@` key to move to a specific one. After pressing `@` followed by a 4-digit hex memory address, you can start type byte values, which will be written sequentially into memory, starting from that address.
 
-- ASCII: typing an `a` followed by a byte in hex will output which ASCII character that byte represents.
+Special keys and commands:
 
-- Write: typing a `w` followed by a 2 byte memory address (also in hex), followed by a 1 byte value will write that value to the memory location.
-
-- Jump: typing a `j` followed by a 2 byte memory address (in hex) will start executing a program at that address.
-
-- Execute: a shorthand for Jump, typing an `x` followed by either 1 or 2 will run the program in that cartridge slot, so you don't need to memorise their addresses.
-
-- Clear: typing a `c` will immediately clear the screen.
-
-It is important to understand that commands are interpreted as you type them, so entering a `j`, for example, will immediately start the jump command, which expects 4 characters, and will then transfer program execution to that location. This means that pressing enter is never needed to finish a command. Also, you can use spaces anywhere in a command if it helps you to visually separate arguments, but they are not required.
-
-The command you will use most often is likely the Execute command, which allows you two start a program from one of the cartridge slots.
+- Read:  Type `>` followed by two addresses to display the contents of that range (inclusive).
+- Execute: Typing an `x` will immediately transfer program execution to the current address. Programs can return with either `rts` or `jmp $fff8`.
+- Comment: A `;` enters comment mode. Characters typed afterward are ignored until enter is pressed.
 
 ## Cartridges
 

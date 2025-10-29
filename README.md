@@ -12,13 +12,13 @@ $ cd Ozpex-64
 $ python3 main.py
 ```
 
-This will install Ozpex 64 and start the emulator. You should see a prompt that says 'Welcome to Ozpex 64`, which is a message from the computer's built-in machine monitor. This monitor has a few simple functions: it lets you run programs from the cartridge slots and debug them afterward by inspecting & modifying memory. You can also test hardware to make sure it is functioning correctly by reading and writing to their respective memory addresses.
+This will install Ozpex 64 and start the emulator. You should see a prompt that says 'Ozpex 64`, which is a message from the computer's built-in machine monitor. This monitor has a few simple functions: it lets you run programs, test hardware, check memory and write programs of your own in raw machine code.
 
 Read the <MANUAL.md> to go further.
 
 ### Machine Monitor
 
-The monitor included in ROM is quite unusual, but allows you to work quickly once you get used to it (so long as you don't make any typos). Commands are interpreted as you type, so the first character will immediately start whichever command you choose, which will then accept arguments as you type them and immediately execute once it has recieved enough information.
+Included in ROM, and started on boot is the hex monitor for the Ozpex 64, reminiscient of [WozMon, from the Apple I](https://www.sbprojects.net/projects/apple1/wozmon.php). It allows you to efficiently read and write to the computer's memory and run programs.
 
 ## Emulator
 
