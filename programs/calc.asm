@@ -86,7 +86,7 @@ get_key:
 _get_key_exit:
   lda #NEWLINE
   sta SERIAL
-  jmp EXIT_VEC
+  jmp (EXIT_VEC)
 
 ; wait for a key and return (in a) the value of a single hex char
 ; modifies: a (duh)
@@ -164,7 +164,7 @@ _print_done:
 
 welcome_message:
   .byte CLEAR, ESCAPE, "[7m"
-  .byte " O64 Calculator v1.0.0 "
+  .byte " O64 Calculator v1.0.1 "
   .byte ESCAPE, "[0m", NEWLINE
 
   .byte "TIP: Spaces are optional.", NEWLINE

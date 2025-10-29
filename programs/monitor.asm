@@ -1,219 +1,208 @@
   .org $c003
 
-; ascii codes:
-SERIAL    = $8002
-CLEAR     =   $11
-ESCAPE    =   $1b
-NEWLINE   =   $0a
-BACKSPACE =   $08
-
 ; memory map:
-ROM      = $c003
-SLOT1    = $8003
-SLOT2    = $a003
+SERIAL   = $8002
 EXIT_VEC = $fff8
 
+; ascii codes:
+ESCAPE    = $1b
+CLEAR     = $11
+NEWLINE   = $0a
+DELETE    = $7f
+BACKSPACE = $08
+
 ; memory allocation:
-PRINT         = $a0 ; 2 bytes
-BYTE_BUILD    = $a2 ; 1 byte
-WORD_LOCATION = $a3 ; 2 bytes
+PRINT        = $50      ; 2 bytes
+BYTE_BUILD   = $40      ; 1 byte
+CURRENT_ADDR = $30      ; 2 bytes
+RANGE_END    = $32      ; 2 bytes
 
 reset:
-  lda #boot_msg
+  lda #welcome_message
   sta PRINT
-  lda #>boot_msg
+  lda #>welcome_message
   sta PRINT+1
   jsr print
 
-command_loop:
-  jsr command
-  jmp command_loop
+  ; if starting from the exit vector, skip the welcome message
+restart:
+  jsr print_addr
 
-; show the prompt, run a full command and return
-; modifies: a, x, y
-command:
-  lda #prompt
-  sta PRINT
-  lda #>prompt
-  sta PRINT+1
-  jsr print
-_command_wait_for_key:
-  jsr get_key
-
-  cmp #"c"
-  beq _command_clear
-  cmp #"a"
-  beq _command_ascii
-  cmp #"r"
-  beq _command_read
-  cmp #"w"
-  beq _command_write
-  cmp #"x"
-  beq _command_exec
-  cmp #"j"
-  beq _command_jump
-  cmp #NEWLINE
-  beq _command_skip
-
-  ; unknown command type, print error message
-  lda #unknown_command_mode_msg
-  sta PRINT
-  lda #>unknown_command_mode_msg
-  sta PRINT+1
-  jsr print
-
-  rts
-
-_command_skip:
-  rts
-
-_command_ascii:
-  ; this functionality is not included in the read command so that a table of
-  ; which ASCII codes are printable is not needed, as some characters may have
-  ; confusing effects when printed directly, such as $11 (clears the screen).
-
+loop:
+  ; get a byte
   jsr get_byte
-  ldx #NEWLINE
-  stx SERIAL
-  ldx #"'"
-  stx SERIAL
-  sta SERIAL
-  stx SERIAL
-  ldx #NEWLINE
-  stx SERIAL
-  rts
 
-_command_clear:
-  lda #$11 ; device control 1 (clear)
-  sta SERIAL
-  rts
-
-_command_read:
-  jsr get_byte
-  sta WORD_LOCATION+1
-  jsr get_byte
-  sta WORD_LOCATION
-
-  ; use word_location as a pointer to fetch
+  ; write it to the address
   ldy #0
-  lda (WORD_LOCATION),y
+  sta (CURRENT_ADDR),y
 
-  ; print the hex representation of the value
-  ldx #NEWLINE
+  jsr next_addr
+
+  jmp loop
+
+; increment the current memory address
+; modifies: 
+next_addr:
+  inc CURRENT_ADDR               ; increment low byte
+  bne _next_addr_inc_didnt_carry ; if it didn’t overflow, we’re done
+  inc CURRENT_ADDR+1             ; else, increment high byte
+_next_addr_inc_didnt_carry:
+  rts
+
+; print the current memory address
+; modifies: a, x, y
+print_addr:
+  ; print the address
+  lda CURRENT_ADDR+1
+  jsr hex_byte
   stx SERIAL
-  ldx #"$"
-  stx SERIAL
+  sty SERIAL
+  lda CURRENT_ADDR
   jsr hex_byte
   stx SERIAL
   sty SERIAL
 
-  ldx #NEWLINE
-  stx SERIAL
-
-  rts
-
-_command_exec:
-  jsr exec
-  rts
-
-_command_write:
-  jsr write
-  rts
-
-_command_jump:
-  jsr jump
-  rts
-
-boot_msg:
-  .byte CLEAR, ESCAPE, "[7m"
-  .byte " O64 Monitor v1.1.0 "
-  .byte ESCAPE, "[0m", NEWLINE
-
-  .byte "Welcome to Ozpex 64!", NEWLINE
-  .byte NEWLINE
-  .byte 0
-
-unknown_command_mode_msg:
-  .byte BACKSPACE, " ", BACKSPACE, BACKSPACE, BACKSPACE
-  .byte 0
-
-unknown_exec_location_msg:
-  .byte " - unknown location!", NEWLINE
-  .byte 0
-
-prompt:
-  .byte "? "
-  .byte 0
-
-exec:
-  jsr get_key
-
-  ldx #NEWLINE
-  stx SERIAL
-
-  cmp #"1"
-  beq _exec_go_1
-  cmp #"2"
-  beq _exec_go_2
-  rts
-_exec_go_1
-  jsr _exec_go_1_sr
-  rts
-_exec_go_1_sr:
-  jmp SLOT1
-_exec_go_2:
-  jsr _exec_go_2_sr
-  rts
-_exec_go_2_sr:
-  jmp SLOT2
-
-; write to a memory address from the serial
-; modifies: a, x, y
-write:
-  jsr get_byte
-  sta WORD_LOCATION+1
-  jsr get_byte
-  sta WORD_LOCATION
-
-  jsr get_byte
-
-  ldy #0
-  sta (WORD_LOCATION),y
-  
-  sty SERIAL
-  stx SERIAL
-
-  lda #NEWLINE
+  ; print ': #
+  lda #":"
+  sta SERIAL
+  lda #" "
   sta SERIAL
 
   rts
-
-; jump to a memory address from the serial
-; modifies: a
-jump:
-  jsr get_byte
-  sta WORD_LOCATION+1
-  jsr get_byte
-  sta WORD_LOCATION
-
-  ; jump to the location, but as a subroutine so that they can return back to
-  ; the monitor
-  lda #NEWLINE
-  sta SERIAL
-  jsr _command_jump_go
-  rts
-_command_jump_go:
-  jmp (WORD_LOCATION)
 
 ; return (in a) a single key, ignoring spaces
-; modifies: a (duh)
+; modifies: a, x, y
 get_key:
   lda SERIAL
-  beq get_key ; if no char was typed, check again.
-  sta SERIAL  ; echo back the char.
-  cmp #" "    ; if space was pressed,
-  beq get_key ; wait for the next key.
+  beq get_key             ; if no char was typed, check again.
+
+  cmp #"@"                ; if "@" was pressed,
+  beq _get_key_new_addr   ; change address
+
+  cmp #">"                ; if "." was pressed,
+  beq _get_key_addr_range ; print an address range
+
+  sta SERIAL               ; echo back the char.
+
+  cmp #"x"                ; if "x" was pressed,
+  beq _get_key_execute    ; execute a program
+
+  cmp #" "                 ; if space was pressed,
+  beq get_key              ; wait for the next key.
+  cmp #NEWLINE             ; if newline was pressed,
+  beq _get_key_newline     ; handle it.
+  cmp #";"                 ; if space was pressed,
+  beq _get_key_comment     ; start a comment.
+
   rts
+_get_key_newline:
+  ; show the latest memory address
+  jsr print_addr
+  jmp get_key
+_get_key_new_addr:
+  lda #NEWLINE
+  sta SERIAL
+  sta SERIAL
+
+  jsr get_byte
+  sta CURRENT_ADDR+1
+  jsr get_byte
+  sta CURRENT_ADDR
+
+  lda #":"
+  sta SERIAL
+  lda #" "
+  sta SERIAL
+
+  jmp get_key
+_get_key_comment:
+  lda SERIAL                ; read a key.
+  sta SERIAL
+  cmp #NEWLINE              ; only if it's a newline,
+  beq _get_key_newline      ; exit the comment
+
+  cmp #DELETE               ; if they pressed backspace,
+  bne _get_key_comment
+  lda #BACKSPACE            ; move cursor back
+  sta SERIAL
+  lda #" "                  ; clear character
+  sta SERIAL     
+  lda #BACKSPACE            ; move cursor back twice
+  sta SERIAL
+  jmp _get_key_comment
+_get_key_execute:
+  lda #NEWLINE
+  sta SERIAL
+  jsr _get_key_execute_subroutine
+  jmp (EXIT_VEC)
+_get_key_execute_subroutine:
+  jmp (CURRENT_ADDR)
+_get_key_addr_range:
+  lda #addr_range_prompt
+  sta PRINT
+  lda #>addr_range_prompt
+  sta PRINT+1
+  jsr print
+
+  jsr get_byte
+  sta RANGE_END+1
+  jsr get_byte
+  sta RANGE_END
+
+  lda #":"
+  sta SERIAL
+  lda #NEWLINE
+  sta SERIAL
+
+  ; skip the check for printing on $xxx0 addresses only
+  jsr print_addr
+  jmp _get_key_addr_range_loop_skip_addr_print
+
+_get_key_addr_range_loop:
+  ; if the last nibble is 0, print the full address
+  lda CURRENT_ADDR
+  and #$0f
+  bne _get_key_addr_range_loop_skip_addr_print
+  lda #NEWLINE
+  sta SERIAL
+  jsr print_addr
+_get_key_addr_range_loop_skip_addr_print:
+
+  ; output the byte
+  ldy #0
+  lda (CURRENT_ADDR),y
+  jsr hex_byte
+  stx SERIAL
+  sty SERIAL
+  lda #" "
+  sta SERIAL
+
+  ; check if the low byte is at the end of the range
+  lda CURRENT_ADDR
+  cmp RANGE_END
+  beq _get_key_addr_range_low_eq
+
+_get_key_addr_range_inc:
+  jsr next_addr
+
+  ; loop again
+  jmp _get_key_addr_range_loop
+
+_get_key_addr_range_low_eq:
+; then check if the high byte is at the end of the range
+  lda CURRENT_ADDR+1
+  cmp RANGE_END+1
+  ; if so, finish printing the range
+  beq _get_key_addr_range_high_eq
+  ; else, increment and move on
+  jmp _get_key_addr_range_inc
+
+_get_key_addr_range_high_eq:
+  lda #NEWLINE
+  sta SERIAL
+  sta SERIAL
+  jsr print_addr
+  jmp loop
 
 ; wait for a key and return (in a) the value of a single hex char
 ; modifies: a (duh)
@@ -221,6 +210,7 @@ get_nibble:
   jsr get_key
   cmp #$3a
   bcc _get_nibble_digit
+  sec
   sbc #"a" - 10
   rts
 _get_nibble_digit:
@@ -288,8 +278,20 @@ _print_loop:
 _print_done:
   rts
 
+welcome_message:
+  .byte CLEAR
+  .byte "**** Ozpex 64 Monitor v2.0.0 ****", NEWLINE
+
+  .byte NEWLINE, 0
+
+addr_range_prompt:
+  .byte BACKSPACE, BACKSPACE
+  .byte "  "
+  .byte BACKSPACE, BACKSPACE
+  .byte " -> ", 0
+
   .org EXIT_VEC
-  jmp command_loop
+  .word restart
 
 ; reset vector
   .org  $fffc
