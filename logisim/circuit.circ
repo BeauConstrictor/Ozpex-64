@@ -1012,6 +1012,7 @@ c0
     <comp lib="8" loc="(2035,1535)" name="Text">
       <a name="text" val="(A14 &amp; A15) &amp; ((A2 | ... | A13) | (A0 &amp; A1))"/>
     </comp>
+    <comp loc="(2570,2650)" name="PongCart"/>
     <comp loc="(2590,3110)" name="EditorCart"/>
     <comp loc="(2610,3130)" name="CalcCart"/>
     <comp loc="(2700,3030)" name="VideoCart"/>
@@ -1127,8 +1128,8 @@ c0
     <wire from="(1550,1600)" to="(1550,1640)"/>
     <wire from="(1560,1990)" to="(1570,1990)"/>
     <wire from="(1560,2210)" to="(1560,2220)"/>
+    <wire from="(1560,2220)" to="(1560,2340)"/>
     <wire from="(1560,2220)" to="(1590,2220)"/>
-    <wire from="(1560,2250)" to="(1560,2340)"/>
     <wire from="(1570,1300)" to="(1600,1300)"/>
     <wire from="(1570,1320)" to="(1650,1320)"/>
     <wire from="(1570,1340)" to="(1650,1340)"/>
@@ -1800,5 +1801,124 @@ e8 bd 1 2 8d 2 80 e4
     <wire from="(2860,2960)" to="(2860,3060)"/>
     <wire from="(2860,2960)" to="(2890,2960)"/>
     <wire from="(2890,2940)" to="(2890,2960)"/>
+  </circuit>
+  <circuit name="PongCart">
+    <a name="appearance" val="custom"/>
+    <a name="circuit" val="PongCart"/>
+    <a name="circuitnamedboxfixedsize" val="true"/>
+    <a name="simulationFrequency" val="1024000.0"/>
+    <appear>
+      <rect fill="none" height="60" stroke="#000000" stroke-width="2" width="80" x="60" y="110"/>
+      <text dominant-baseline="central" font-family="SansSerif" font-size="16" font-weight="bold" text-anchor="middle" x="100" y="126">Pong</text>
+      <text dominant-baseline="central" font-family="SansSerif" font-size="12" text-anchor="middle" x="90" y="156">CS1</text>
+      <polyline fill="none" points="70,110 70,170" stroke="#000000" stroke-width="2"/>
+      <polyline fill="none" points="70,120 61,120" stroke="#000000" stroke-width="2"/>
+      <polyline fill="none" points="70,130 61,130" stroke="#000000" stroke-width="2"/>
+      <polyline fill="none" points="70,140 60,140" stroke="#000000" stroke-width="2"/>
+      <polyline fill="none" points="70,160 61,160" stroke="#000000" stroke-width="2"/>
+      <polyline fill="none" points="70,150 61,150" stroke="#000000" stroke-width="2"/>
+      <circ-anchor facing="east" x="120" y="140"/>
+      <circ-port dir="in" pin="2580,1020" x="70" y="120"/>
+      <circ-port dir="in" pin="2580,1060" x="70" y="140"/>
+      <circ-port dir="in" pin="2580,1090" x="70" y="130"/>
+      <circ-port dir="out" pin="2580,1170" x="70" y="160"/>
+    </appear>
+    <comp lib="0" loc="(2580,1020)" name="Pin">
+      <a name="appearance" val="NewPins"/>
+      <a name="label" val="A"/>
+      <a name="radix" val="16"/>
+      <a name="width" val="16"/>
+    </comp>
+    <comp lib="0" loc="(2580,1060)" name="Pin">
+      <a name="appearance" val="NewPins"/>
+      <a name="label" val="CS"/>
+    </comp>
+    <comp lib="0" loc="(2580,1090)" name="Pin">
+      <a name="appearance" val="NewPins"/>
+      <a name="label" val="RW"/>
+    </comp>
+    <comp lib="0" loc="(2580,1170)" name="Pin">
+      <a name="appearance" val="NewPins"/>
+      <a name="label" val="DOUT"/>
+      <a name="type" val="output"/>
+      <a name="width" val="8"/>
+    </comp>
+    <comp lib="1" loc="(2600,1170)" name="Controlled Buffer">
+      <a name="facing" val="west"/>
+      <a name="width" val="8"/>
+    </comp>
+    <comp lib="1" loc="(2610,1150)" name="AND Gate">
+      <a name="facing" val="south"/>
+      <a name="size" val="30"/>
+    </comp>
+    <comp lib="4" loc="(2690,1010)" name="ROM">
+      <a name="addrWidth" val="16"/>
+      <a name="appearance" val="classic"/>
+      <a name="contents">addr/data: 16 8
+32771*0 a9 7 85 30 85 32 85
+33 a9 0 85 36 85 37 85
+34 85 35 20 32 81 20 f
+81 20 4b 80 20 84 80 10*ea
+e6 36 4c 15 80 a9 8c 85
+38 a9 81 85 39 20 68 81
+ad 2 80 c9 a d0 f9 8d
+2 80 8d 2 80 6c f8 ff
+a5 32 c9 f 90 8 a9 1
+85 34 c6 32 c6 32 a5 32
+c9 1 b0 10 a5 33 c5 30
+d0 cb e6 37 a9 0 85 34
+e6 32 e6 32 a5 33 c9 f
+90 4 a9 0 85 35 a5 33
+c9 1 b0 4 a9 1 85 35
+60 a9 7a 85 38 a9 81 85
+39 20 68 81 a5 37 20 57
+81 e0 30 f0 3 8e 2 80
+8c 2 80 a9 a 8d 2 80
+a0 0 a9 83 85 38 a9 81
+85 39 20 68 81 a2 0 e4
+32 d0 12 c4 33 d0 e a9
+a6 85 38 a9 81 85 39 20
+68 81 4c fa 80 e0 0 d0
+11 c4 30 d0 d a9 20 8d
+2 80 a9 7c 8d 2 80 4c
+fa 80 e0 f d0 11 c4 33
+d0 d a9 7c 8d 2 80 a9
+20 8d 2 80 4c fa 80 a9
+20 8d 2 80 8d 2 80 e8
+e0 10 d0 b3 a9 87 85 38
+a9 81 85 39 20 68 81 c8
+c0 10 d0 96 a5 36 29 1
+d0 1c a5 34 f0 5 c6 32
+4c 20 81 e6 32 a5 36 29
+3 d0 b a5 34 a5 35 f0
+3 e6 33 60 c6 33 60 ad
+2 80 c9 77 f0 5 c9 73
+f0 6 60 c6 30 4c 45 81
+e6 30 a5 30 29 f 85 30
+60 c9 a 90 4 18 69 57
+60 69 30 60 48 4*4a 20 4c
+81 aa 68 29 f 20 4c 81
+a8 60 98 48 a0 0 b1 38
+f0 7 8d 2 80 c8 4c 6c
+81 68 a8 60 11 53 63 6f
+72 65 3a 20 0 7c 7c 20
+0 20 7c 7c a 0 47 61
+6d 65 20 6f 76 65 72 21
+20 28 70 72 65 73 73 20
+65 6e 74 65 72 29 20 0
+23 23
+</a>
+    </comp>
+    <comp loc="(2470,960)" name="CalcCart"/>
+    <wire from="(2580,1020)" to="(2690,1020)"/>
+    <wire from="(2580,1060)" to="(2620,1060)"/>
+    <wire from="(2580,1090)" to="(2600,1090)"/>
+    <wire from="(2580,1170)" to="(2600,1170)"/>
+    <wire from="(2600,1090)" to="(2600,1120)"/>
+    <wire from="(2610,1150)" to="(2610,1160)"/>
+    <wire from="(2620,1060)" to="(2620,1120)"/>
+    <wire from="(2620,1170)" to="(2950,1170)"/>
+    <wire from="(2930,1070)" to="(2950,1070)"/>
+    <wire from="(2950,1070)" to="(2950,1170)"/>
   </circuit>
 </project>

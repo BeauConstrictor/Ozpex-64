@@ -53,6 +53,7 @@ loop:
   jmp loop
 
 exit:
+  jsr draw
   lda #exit_message
   sta PRINT
   lda #>exit_message
@@ -61,10 +62,14 @@ exit:
 _exit_loop:
   lda SERIAL
   cmp #NEWLINE
+  beq _exit_restart
+  cmp #ESCAPE
   bne _exit_loop
   sta SERIAL
   sta SERIAL
   jmp (EXIT_VEC)
+_exit_restart:
+  jmp main
 
 collide:
   lda ballx
@@ -291,6 +296,9 @@ line_start:
 line_trail:
   .byte " ||", NEWLINE, 0
 exit_message:
-  .byte "Game over! (press enter) ", 0
+  .byte "**** Game Over! ****", NEWLINE
+  .byte "Press enter to play again.", NEWLINE
+  .byte "Press escape to exit.", NEWLINE
+  .byte 0
 ball:
   .byte "##", 0
