@@ -24,10 +24,6 @@ Included in ROM, and started on boot is the hex monitor for the Ozpex 64, remini
 
 The emulator is a work in progress that develops alongside the software for the computer, so is not yet a complete 6502 emulator. Nevertheless, you can use it to try out the computer by typing `python3 main.py` in the terminal. This will start the computer with both cartridge slots empty. The emulator uses your terminal window as the serial output for programs.
 
-## Logisim Implementation
-
-The computer has also been implemented in Logisim Evolution, using a [premade 6502 core](https://github.com/solrabizna/logi6502). The computer is almost fully functional, but is still missing the hardware timer. The pong game (and most future games) will not look great, as the serial terminal does not support clearing the screen using the Ozpex 64-specific clearing system (0x11). Despite this, you can still use the computer, and everything else will function correctly. You can even run the simulator faster my custom emulator on my machine. There is also a tool included that converts ROM files into the correct format to load directly onto cartridges in Logisim.
-
 ### Syntax
 
 The most common options you will use with the emulator are `-1` and `-2`, which allow you to specify what goes in cartridge slots 1 & 2, respectively. The emulator currently supports two types of cartridge: `rom`, which will load from `roms/<file>.bin` and `bbram` (battery-backed ram, a form of persistent storage), which will load from `bbrams/<file>.bin`. The syntax is as follows:
@@ -39,6 +35,10 @@ python3 main.py [-x|--slotx] [rom|bbram]:<file>
 When starting the emulator, you can also pass the `--debug` option to watch the computer run at the instruction level. You will probably also want to pass `--rom` followed by a custom program that doesn't depend on input or output to the serial in this case, as the built-in monitor will conflict with the debug output.
 
 Check <instructions.md> for more detailed information on the progress of the emulator itself.
+
+## Logisim Implementation
+
+The computer has also been implemented in Logisim Evolution, using a [premade 6502 core](https://github.com/solrabizna/logi6502). The computer is almost fully functional, but is still missing the hardware timer. The pong game (and most future games) will not look great, as the serial terminal does not support clearing the screen using the Ozpex 64-specific clearing system (0x11). Despite this, you can still use the computer, and everything else will function correctly. You can even run the simulator faster my custom emulator on my machine. There is also a tool included that converts ROM files into the correct format to load directly onto cartridges in Logisim.
 
 ## Writing Software
 
