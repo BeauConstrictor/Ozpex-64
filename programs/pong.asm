@@ -126,6 +126,7 @@ _draw_skip_leading_zero:
   sty SERIAL
   lda #NEWLINE
   sta SERIAL
+  sta SERIAL
 
   ldy #0
 _draw_y_loop:
@@ -291,7 +292,7 @@ _print_done:
 score_message:
   .byte CLEAR
   .byte ESCAPE, "[7m"
-  .byte " O64 Pong v1.0.3 "
+  .byte " O64 Pong v1.0.4 "
   .byte ESCAPE, "[0m", NEWLINE
   .byte "Score: ", 0
 line_start:
@@ -299,6 +300,7 @@ line_start:
 line_trail:
   .byte " ||", NEWLINE, 0
 exit_message:
+  .byte NEWLINE
   .byte "**** Game Over! ****", NEWLINE
   .byte "Press enter to play again.", NEWLINE
   .byte "Press escape to exit.", NEWLINE
