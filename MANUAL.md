@@ -27,11 +27,11 @@ You should see a welcome message and a prompt, indicating that the computer has 
 
 The monitor is a program built into rom that runs automatically on boot. It allows you to efficiently inspect memory, test hardware and write and run programs.
 
-When started, the monitor will begin at an random memory address. Use the `@` key to move to a specific one. After pressing `@` followed by a 4-digit hex memory address, you can start type byte values, which will be written sequentially into memory, starting from that address.
+When started, the monitor will begin at an random memory address. Use the `@` key to move to a specific one. After pressing `@` followed by a 4-digit hex memory address, you can start typing byte values, which will be written sequentially into memory, starting from that address.
 
 Special keys and commands:
 
-- Read:  Type `>` followed by two addresses to display the contents of that range (inclusive).
+- Read:  Type `>` followed by an address to print out the memory between your current address and that one (inclusive).
 - Execute: Typing an `x` will immediately transfer program execution to the current address. Programs can return with either `rts` or `jmp $fff8`.
 - Comment: A `;` enters comment mode. Characters typed afterward are ignored until enter is pressed.
 
@@ -43,7 +43,7 @@ Before you can use this command, you will need actually insert something into a 
 $ python main.py -1 rom:calc
 ```
 
-This command will start the emulator with the Calculator program in cartridge slot 1 - usually, programs are designed for cartridge slot 1 and data that they operate on goes in slot 2. This computer has no concept of a filesystem, so a separate cartridge is needed for each 'file' that you want to work on. If you had a physical version of this computer, you would organise these cartridges physically instead of in software like in a modern computer.
+This command will start the emulator with the Calculator program in cartridge slot 1 - usually, programs are designed for cartridge slot 1 and data that they operate on goes in slot 2. This computer has no concept of a filesystem, so a separate cartridge is needed for each 'file' that you want to work on. If you had a physical version of this computer, you would organise these cartridges physically instead of in software like in a modern computer. Once you're in the emulator, you can run this program with `@8003x`.
 
 You can also use the `-2` option if you want to load something into the second cartridge slot.
 
