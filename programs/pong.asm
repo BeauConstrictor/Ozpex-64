@@ -65,7 +65,7 @@ _exit_loop:
   beq _exit_restart
   cmp #ESCAPE
   bne _exit_loop
-  sta SERIAL
+  lda #CLEAR
   sta SERIAL
   jmp (EXIT_VEC)
 _exit_restart:
@@ -290,6 +290,9 @@ _print_done:
 
 score_message:
   .byte CLEAR
+  .byte ESCAPE, "[7m"
+  .byte " O64 Pong v1.0.3 "
+  .byte ESCAPE, "[0m", NEWLINE
   .byte "Score: ", 0
 line_start:
   .byte "|| ", 0
