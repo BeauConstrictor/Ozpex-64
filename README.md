@@ -26,7 +26,7 @@ The emulator is a work in progress that develops alongside the software for the 
 
 ## Logisim Implementation
 
-This computer has also been implemented in Logisim Evolution, using a [premade 6502 core](https://github.com/SolraBizna/logi6502). While the computer is functional, the I/O is terrible, as the Logisim TTY does not support ANSI escape codes, and the Logisim keyboard does not support the escape key, so there is no way to exit software that uses that key (all of the software designed by me), and there is no way to save your work to BBSRAM in the text editor, because that also relies on the escape key. You can find this implementation in the `logisim` directory of this repo, along with the scripts to convert roms into an appropriate format.
+The computer has also been implemented in Logisim Evolution, using a [premade 6502 core](https://github.com/solrabizna/logi6502). The computer is almost fully functional, but is still missing the hardware timer. The pong game (and most future games) will not look great, as the serial terminal does not support clearing the screen using the Ozpex 64-specific clearing system (0x11). Despite this, you can still use the computer, and everything else will function correctly. You can even run the simulator faster my custom emulator on my machine. There is also a tool included that converts ROM files into the correct format to load directly onto cartridges in Logisim.
 
 ### Syntax
 
