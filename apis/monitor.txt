@@ -1,0 +1,397 @@
+Sections:
+00: "org0001:c003" (C003-C199)
+01: "org0002:fff8" (FFF8-FFFA)
+02: "org0003:fffc" (FFFC-FFFE)
+
+
+Source: "programs/monitor.asm"
+                        	     1:   .org $c003
+                        	     2: 
+                        	     3: ; memory map:
+                        	     4: SERIAL   = $8002
+                        	     5: EXIT_VEC = $fff8
+                        	     6: 
+                        	     7: ; ascii codes:
+                        	     8: ESCAPE    = $1b
+                        	     9: CLEAR     = $11
+                        	    10: NEWLINE   = $0a
+                        	    11: DELETE    = $7f
+                        	    12: BACKSPACE = $08
+                        	    13: 
+                        	    14: ; memory allocation:
+                        	    15: PRINT        = $50      ; 2 bytes
+                        	    16: BYTE_BUILD   = $40      ; 1 byte
+                        	    17: CURRENT_ADDR = $30      ; 2 bytes
+                        	    18: RANGE_END    = $32      ; 2 bytes
+                        	    19: 
+                        	    20: reset:
+00:C003 A969            	    21:   lda #welcome_message
+00:C005 8550            	    22:   sta PRINT
+00:C007 A9C1            	    23:   lda #>welcome_message
+00:C009 8551            	    24:   sta PRINT+1
+00:C00B 205BC1          	    25:   jsr print
+                        	    26: 
+                        	    27:   ; if starting from the exit vector, skip the welcome message
+                        	    28: restart:
+00:C00E 2025C0          	    29:   jsr print_addr
+                        	    30: 
+                        	    31: loop:
+                        	    32:   ; get a byte
+00:C011 204CC1          	    33:   jsr get_byte
+                        	    34: 
+                        	    35:   ; write it to the address
+00:C014 A000            	    36:   ldy #0
+00:C016 9130            	    37:   sta (CURRENT_ADDR),y
+                        	    38: 
+00:C018 201EC0          	    39:   jsr next_addr
+                        	    40: 
+00:C01B 4C11C0          	    41:   jmp loop
+                        	    42: 
+                        	    43: ; increment the current memory address
+                        	    44: ; modifies: 
+                        	    45: next_addr:
+00:C01E E630            	    46:   inc CURRENT_ADDR               ; increment low byte
+00:C020 D002            	    47:   bne _next_addr_inc_didnt_carry ; if it didn’t overflow, we’re done
+00:C022 E631            	    48:   inc CURRENT_ADDR+1             ; else, increment high byte
+                        	    49: _next_addr_inc_didnt_carry:
+00:C024 60              	    50:   rts
+                        	    51: 
+                        	    52: ; print the current memory address
+                        	    53: ; modifies: a, x, y
+                        	    54: print_addr:
+                        	    55:   ; print the address
+00:C025 A531            	    56:   lda CURRENT_ADDR+1
+00:C027 203BC1          	    57:   jsr hex_byte
+00:C02A 8E0280          	    58:   stx SERIAL
+00:C02D 8C0280          	    59:   sty SERIAL
+00:C030 A530            	    60:   lda CURRENT_ADDR
+00:C032 203BC1          	    61:   jsr hex_byte
+00:C035 8E0280          	    62:   stx SERIAL
+00:C038 8C0280          	    63:   sty SERIAL
+                        	    64: 
+                        	    65:   ; print ': #
+00:C03B A93A            	    66:   lda #":"
+00:C03D 8D0280          	    67:   sta SERIAL
+00:C040 A920            	    68:   lda #" "
+00:C042 8D0280          	    69:   sta SERIAL
+                        	    70: 
+00:C045 60              	    71:   rts
+                        	    72: 
+                        	    73: ; return (in a) a single key, ignoring spaces
+                        	    74: ; modifies: a, x, y
+                        	    75: get_key:
+00:C046 AD0280          	    76:   lda SERIAL
+00:C049 F0FB            	    77:   beq get_key             ; if no char was typed, check again.
+                        	    78: 
+00:C04B C940            	    79:   cmp #"@"                ; if "@" was pressed,
+00:C04D F01E            	    80:   beq _get_key_new_addr   ; change address
+                        	    81: 
+00:C04F C93E            	    82:   cmp #">"                ; if "." was pressed,
+00:C051 F067            	    83:   beq _get_key_addr_range ; print an address range
+                        	    84: 
+00:C053 8D0280          	    85:   sta SERIAL               ; echo back the char.
+                        	    86: 
+00:C056 C978            	    87:   cmp #"x"                ; if "x" was pressed,
+00:C058 F052            	    88:   beq _get_key_execute    ; execute a program
+                        	    89: 
+00:C05A C920            	    90:   cmp #" "                 ; if space was pressed,
+00:C05C F0E8            	    91:   beq get_key              ; wait for the next key.
+00:C05E C90A            	    92:   cmp #NEWLINE             ; if newline was pressed,
+00:C060 F005            	    93:   beq _get_key_newline     ; handle it.
+00:C062 C93B            	    94:   cmp #";"                 ; if space was pressed,
+00:C064 F026            	    95:   beq _get_key_comment     ; start a comment.
+                        	    96: 
+00:C066 60              	    97:   rts
+                        	    98: _get_key_newline:
+                        	    99:   ; show the latest memory address
+00:C067 2025C0          	   100:   jsr print_addr
+00:C06A 4C46C0          	   101:   jmp get_key
+                        	   102: _get_key_new_addr:
+00:C06D A90A            	   103:   lda #NEWLINE
+00:C06F 8D0280          	   104:   sta SERIAL
+00:C072 8D0280          	   105:   sta SERIAL
+                        	   106: 
+00:C075 204CC1          	   107:   jsr get_byte
+00:C078 8531            	   108:   sta CURRENT_ADDR+1
+00:C07A 204CC1          	   109:   jsr get_byte
+00:C07D 8530            	   110:   sta CURRENT_ADDR
+                        	   111: 
+00:C07F A93A            	   112:   lda #":"
+00:C081 8D0280          	   113:   sta SERIAL
+00:C084 A920            	   114:   lda #" "
+00:C086 8D0280          	   115:   sta SERIAL
+                        	   116: 
+00:C089 4C46C0          	   117:   jmp get_key
+                        	   118: _get_key_comment:
+00:C08C AD0280          	   119:   lda SERIAL                ; read a key.
+00:C08F 8D0280          	   120:   sta SERIAL
+00:C092 C90A            	   121:   cmp #NEWLINE              ; only if it's a newline,
+00:C094 F0D1            	   122:   beq _get_key_newline      ; exit the comment
+                        	   123: 
+00:C096 C97F            	   124:   cmp #DELETE               ; if they pressed backspace,
+00:C098 D0F2            	   125:   bne _get_key_comment
+00:C09A A908            	   126:   lda #BACKSPACE            ; move cursor back
+00:C09C 8D0280          	   127:   sta SERIAL
+00:C09F A920            	   128:   lda #" "                  ; clear character
+00:C0A1 8D0280          	   129:   sta SERIAL     
+00:C0A4 A908            	   130:   lda #BACKSPACE            ; move cursor back twice
+00:C0A6 8D0280          	   131:   sta SERIAL
+00:C0A9 4C8CC0          	   132:   jmp _get_key_comment
+                        	   133: _get_key_execute:
+00:C0AC A90A            	   134:   lda #NEWLINE
+00:C0AE 8D0280          	   135:   sta SERIAL
+00:C0B1 20B7C0          	   136:   jsr _get_key_execute_subroutine
+00:C0B4 6CF8FF          	   137:   jmp (EXIT_VEC)
+                        	   138: _get_key_execute_subroutine:
+00:C0B7 6C3000          	   139:   jmp (CURRENT_ADDR)
+                        	   140: _get_key_addr_range:
+00:C0BA A98E            	   141:   lda #addr_range_prompt
+00:C0BC 8550            	   142:   sta PRINT
+00:C0BE A9C1            	   143:   lda #>addr_range_prompt
+00:C0C0 8551            	   144:   sta PRINT+1
+00:C0C2 205BC1          	   145:   jsr print
+                        	   146: 
+00:C0C5 204CC1          	   147:   jsr get_byte
+00:C0C8 8533            	   148:   sta RANGE_END+1
+00:C0CA 204CC1          	   149:   jsr get_byte
+00:C0CD 8532            	   150:   sta RANGE_END
+                        	   151: 
+00:C0CF A93A            	   152:   lda #":"
+00:C0D1 8D0280          	   153:   sta SERIAL
+00:C0D4 A90A            	   154:   lda #NEWLINE
+00:C0D6 8D0280          	   155:   sta SERIAL
+                        	   156: 
+                        	   157:   ; skip the check for printing on $xxx0 addresses only
+00:C0D9 2025C0          	   158:   jsr print_addr
+00:C0DC 4CEDC0          	   159:   jmp _get_key_addr_range_loop_skip_addr_print
+                        	   160: 
+                        	   161: _get_key_addr_range_loop:
+                        	   162:   ; if the last nibble is 0, print the full address
+00:C0DF A530            	   163:   lda CURRENT_ADDR
+00:C0E1 290F            	   164:   and #$0f
+00:C0E3 D008            	   165:   bne _get_key_addr_range_loop_skip_addr_print
+00:C0E5 A90A            	   166:   lda #NEWLINE
+00:C0E7 8D0280          	   167:   sta SERIAL
+00:C0EA 2025C0          	   168:   jsr print_addr
+                        	   169: _get_key_addr_range_loop_skip_addr_print:
+                        	   170: 
+                        	   171:   ; output the byte
+00:C0ED A000            	   172:   ldy #0
+00:C0EF B130            	   173:   lda (CURRENT_ADDR),y
+00:C0F1 203BC1          	   174:   jsr hex_byte
+00:C0F4 8E0280          	   175:   stx SERIAL
+00:C0F7 8C0280          	   176:   sty SERIAL
+00:C0FA A920            	   177:   lda #" "
+00:C0FC 8D0280          	   178:   sta SERIAL
+                        	   179: 
+                        	   180:   ; check if the low byte is at the end of the range
+00:C0FF A530            	   181:   lda CURRENT_ADDR
+00:C101 C532            	   182:   cmp RANGE_END
+00:C103 F006            	   183:   beq _get_key_addr_range_low_eq
+                        	   184: 
+                        	   185: _get_key_addr_range_inc:
+00:C105 201EC0          	   186:   jsr next_addr
+                        	   187: 
+                        	   188:   ; loop again
+00:C108 4CDFC0          	   189:   jmp _get_key_addr_range_loop
+                        	   190: 
+                        	   191: _get_key_addr_range_low_eq:
+                        	   192: ; then check if the high byte is at the end of the range
+00:C10B A531            	   193:   lda CURRENT_ADDR+1
+00:C10D C533            	   194:   cmp RANGE_END+1
+                        	   195:   ; if so, finish printing the range
+00:C10F F003            	   196:   beq _get_key_addr_range_high_eq
+                        	   197:   ; else, increment and move on
+00:C111 4C05C1          	   198:   jmp _get_key_addr_range_inc
+                        	   199: 
+                        	   200: _get_key_addr_range_high_eq:
+00:C114 A90A            	   201:   lda #NEWLINE
+00:C116 8D0280          	   202:   sta SERIAL
+00:C119 8D0280          	   203:   sta SERIAL
+00:C11C 2025C0          	   204:   jsr print_addr
+00:C11F 4C11C0          	   205:   jmp loop
+                        	   206: 
+                        	   207: ; wait for a key and return (in a) the value of a single hex char
+                        	   208: ; modifies: a (duh)
+                        	   209: get_nibble:
+00:C122 2046C0          	   210:   jsr get_key
+00:C125 C93A            	   211:   cmp #$3a
+00:C127 9004            	   212:   bcc _get_nibble_digit
+00:C129 38              	   213:   sec
+00:C12A E957            	   214:   sbc #"a" - 10
+00:C12C 60              	   215:   rts
+                        	   216: _get_nibble_digit:
+00:C12D E92F            	   217:   sbc #"0" - 1
+00:C12F 60              	   218:   rts
+                        	   219: 
+                        	   220: ; return (in a) the a register as hex
+                        	   221: ; modifies: a (duh)
+                        	   222: hex_nibble:
+00:C130 C90A            	   223:   cmp #10
+00:C132 9004            	   224:   bcc _hex_nibble_digit
+00:C134 18              	   225:   clc
+00:C135 6957            	   226:   adc #"a" - 10
+00:C137 60              	   227:   rts
+                        	   228: _hex_nibble_digit:
+00:C138 6930            	   229:   adc #"0"
+00:C13A 60              	   230:   rts
+                        	   231: 
+                        	   232: ; return (in x & y) the a register as hex
+                        	   233: ; modifies: x, y, a
+                        	   234: hex_byte:
+00:C13B 48              	   235:   pha ; save the full value for later
+                        	   236:   ; get just the MSN
+00:C13C 4A              	   237:   lsr
+00:C13D 4A              	   238:   lsr
+00:C13E 4A              	   239:   lsr
+00:C13F 4A              	   240:   lsr
+00:C140 2030C1          	   241:   jsr hex_nibble
+00:C143 AA              	   242:   tax ; but the hex char for the MSN in x
+                        	   243: 
+00:C144 68              	   244:   pla ; bring back the full value
+00:C145 290F            	   245:   and #$0f ; get just the LSN
+00:C147 2030C1          	   246:   jsr hex_nibble
+00:C14A A8              	   247:   tay ; but the hex char for the LSN in y
+                        	   248: 
+00:C14B 60              	   249:   rts
+                        	   250: 
+                        	   251: ; wait for a key and return (in a) the value of a byte (2 hex chars)
+                        	   252: ; modifies: a (duh)
+                        	   253: get_byte:
+                        	   254:   ; get the MS nibble and move it to the MS area of the a reg
+00:C14C 2022C1          	   255:   jsr get_nibble
+00:C14F 0A              	   256:   asl
+00:C150 0A              	   257:   asl
+00:C151 0A              	   258:   asl
+00:C152 0A              	   259:   asl
+                        	   260:   ; move the MSN to memory
+00:C153 8540            	   261:   sta BYTE_BUILD
+                        	   262: 
+                        	   263:   ; get the LSN and combine it with the MSN
+00:C155 2022C1          	   264:   jsr get_nibble
+00:C158 0540            	   265:   ora BYTE_BUILD
+00:C15A 60              	   266:   rts
+                        	   267: 
+                        	   268: ; print a null-terminated string pointed to by PRINT
+                        	   269: ; modifies: a, y
+                        	   270: print:
+00:C15B A000            	   271:   ldy #0
+                        	   272: _print_loop:
+00:C15D B150            	   273:   lda (PRINT),y
+00:C15F F007            	   274:   beq _print_done
+00:C161 8D0280          	   275:   sta SERIAL
+00:C164 C8              	   276:   iny
+00:C165 4C5DC1          	   277:   jmp _print_loop
+                        	   278: _print_done:
+00:C168 60              	   279:   rts
+                        	   280: 
+                        	   281: welcome_message:
+00:C169 11              	   282:   .byte CLEAR
+00:C16A 2A2A2A2A204F7A70	   283:   .byte "**** Ozpex 64 Monitor v2.0.0 ****", NEWLINE
+00:C172 6578203634204D6F
+00:C17A 6E69746F72207632
+00:C182 2E302E30202A2A2A
+00:C18A 2A
+00:C18B 0A
+                        	   284: 
+00:C18C 0A              	   285:   .byte NEWLINE, 0
+00:C18D 00
+                        	   286: 
+                        	   287: addr_range_prompt:
+00:C18E 08              	   288:   .byte BACKSPACE, BACKSPACE
+00:C18F 08
+00:C190 2020            	   289:   .byte "  "
+00:C192 08              	   290:   .byte BACKSPACE, BACKSPACE
+00:C193 08
+00:C194 202D3E20        	   291:   .byte " -> ", 0
+00:C198 00
+                        	   292: 
+                        	   293:   .org EXIT_VEC
+01:FFF8 0EC0            	   294:   .word restart
+                        	   295: 
+                        	   296: ; reset vector
+                        	   297:   .org  $fffc
+02:FFFC 03C0            	   298:   .word reset
+
+
+Symbols by name:
+BACKSPACE                        E:0008
+BYTE_BUILD                       E:0040
+CLEAR                            E:0011
+CURRENT_ADDR                     E:0030
+DELETE                           E:007F
+EXIT_VEC                         E:FFF8
+NEWLINE                          E:000A
+PRINT                            E:0050
+RANGE_END                        E:0032
+SERIAL                           E:8002
+_get_key_addr_range              A:C0BA
+_get_key_addr_range_high_eq      A:C114
+_get_key_addr_range_inc          A:C105
+_get_key_addr_range_loop         A:C0DF
+_get_key_addr_range_loop_skip_addr_print  A:C0ED
+_get_key_addr_range_low_eq       A:C10B
+_get_key_comment                 A:C08C
+_get_key_execute                 A:C0AC
+_get_key_execute_subroutine      A:C0B7
+_get_key_new_addr                A:C06D
+_get_key_newline                 A:C067
+_get_nibble_digit                A:C12D
+_hex_nibble_digit                A:C138
+_next_addr_inc_didnt_carry       A:C024
+_print_done                      A:C168
+_print_loop                      A:C15D
+addr_range_prompt                A:C18E
+get_byte                         A:C14C
+get_key                          A:C046
+get_nibble                       A:C122
+hex_byte                         A:C13B
+hex_nibble                       A:C130
+loop                             A:C011
+next_addr                        A:C01E
+print                            A:C15B
+print_addr                       A:C025
+reset                            A:C003
+restart                          A:C00E
+welcome_message                  A:C169
+
+Symbols by value:
+0008 BACKSPACE
+000A NEWLINE
+0011 CLEAR
+0030 CURRENT_ADDR
+0032 RANGE_END
+0040 BYTE_BUILD
+0050 PRINT
+007F DELETE
+8002 SERIAL
+C003 reset
+C00E restart
+C011 loop
+C01E next_addr
+C024 _next_addr_inc_didnt_carry
+C025 print_addr
+C046 get_key
+C067 _get_key_newline
+C06D _get_key_new_addr
+C08C _get_key_comment
+C0AC _get_key_execute
+C0B7 _get_key_execute_subroutine
+C0BA _get_key_addr_range
+C0DF _get_key_addr_range_loop
+C0ED _get_key_addr_range_loop_skip_addr_print
+C105 _get_key_addr_range_inc
+C10B _get_key_addr_range_low_eq
+C114 _get_key_addr_range_high_eq
+C122 get_nibble
+C12D _get_nibble_digit
+C130 hex_nibble
+C138 _hex_nibble_digit
+C13B hex_byte
+C14C get_byte
+C15B print
+C15D _print_loop
+C168 _print_done
+C169 welcome_message
+C18E addr_range_prompt
+FFF8 EXIT_VEC
