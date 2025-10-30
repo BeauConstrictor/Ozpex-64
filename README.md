@@ -53,7 +53,7 @@ SERIAL = $8002 ; this is the address of the computer's serial output.
                ; $8003 refers to the start of cartridge slot 1.
 
   lda #"A"     ; load an ASCII 'A' into the A register.
-  sta S        ; write the contents of the A register to the serial port.
+  sta SERIAL   ; write the contents of the A register to the serial port.
 
   rts          ; return back to the system monitor after the
                ; program has finished executing.
