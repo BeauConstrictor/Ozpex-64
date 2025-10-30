@@ -433,7 +433,7 @@ class Cpu:
             
         self.isa = Isa(self)
         
-        self.pc = randint(0, 0xff)
+        self.pc = 0
         self.sp = randint(0, 0xff)
         self.ra = randint(0, 0xff)
         self.rx = randint(0, 0xff)
