@@ -1,0 +1,282 @@
+Sections:
+00: "org0001:8003" (8003-811B)
+
+
+Source: "programs/assembler.asm"
+                        	     1:   .org $8003
+                        	     2: 
+                        	     3: ; memory map:
+                        	     4: SERIAL = $8002
+                        	     5: 
+                        	     6: ; monitor subroutines:
+                        	     7: ; TODO: include copies of these in this program
+                        	     8: get_key  = $c046
+                        	     9: hex_byte = $c13b
+                        	    10: get_byte = $c14c
+                        	    11: 
+                        	    12: ; ascii codes:
+                        	    13: NEWLINE = $0a
+                        	    14: 
+                        	    15: ; memory allocation:
+                        	    16: opc_buf     = $20    ; 3 bytes 
+                        	    17: opc_handler = $23    ; 2 bytes
+                        	    18: insert_ptr  = $25    ; 2 bytes
+                        	    19: 
+                        	    20: main:
+00:8003 A902            	    21:   lda #02
+00:8005 8526            	    22:   sta insert_ptr+1
+00:8007 A900            	    23:   lda #00
+00:8009 8525            	    24:   sta insert_ptr
+                        	    25: mainloop:
+00:800B A90A            	    26:   lda #NEWLINE
+00:800D 8D0280          	    27:   sta SERIAL
+00:8010 208380          	    28:   jsr print_addr
+00:8013 2046C0          	    29:   jsr get_key
+00:8016 8520            	    30:   sta opc_buf
+00:8018 2046C0          	    31:   jsr get_key
+00:801B 8521            	    32:   sta opc_buf+1
+00:801D 2046C0          	    33:   jsr get_key
+00:8020 8522            	    34:   sta opc_buf+2
+                        	    35: 
+00:8022 A200            	    36:   ldx #0            ; start checking at the first opcode in the table
+                        	    37: dispatch_loop:
+00:8024 20A480          	    38:   jsr dispatch      ; run the opcode handler if it matches and move on
+00:8027 C001            	    39:   cpy #1            ; if a match was not found,
+00:8029 D0F9            	    40:   bne dispatch_loop ; keep going.
+00:802B E0F9            	    41:   cpx #249          ; if the table is exhausted,
+00:802D B003            	    42:   bcs _dispatch_loop_fail   ; the opcode is unknown. 
+00:802F 4C0B80          	    43:   jmp mainloop      ; otherwise, read the next opcode
+                        	    44: _dispatch_loop_fail:
+00:8032 4CFE80          	    45:   jmp bad_handler
+                        	    46: 
+                        	    47: ; increment the insertion pointer
+                        	    48: inc_insert:
+00:8035 E625            	    49:   inc insert_ptr
+00:8037 D002            	    50:   bne _inc_insert_done
+00:8039 E626            	    51:   inc insert_ptr+1
+                        	    52: _inc_insert_done:
+00:803B 60              	    53:   rts
+                        	    54: 
+                        	    55: ; insert the a register and move on
+                        	    56: insert_a:
+00:803C A000            	    57:   ldy #0
+00:803E 9125            	    58:   sta (insert_ptr),y
+00:8040 203580          	    59:   jsr inc_insert
+00:8043 60              	    60:   rts
+                        	    61: 
+                        	    62: ; insert the x and a registers and move on
+                        	    63: insert_ax:
+00:8044 A000            	    64:   ldy #0
+00:8046 48              	    65:   pha
+00:8047 8A              	    66:   txa
+00:8048 9125            	    67:   sta (insert_ptr),y
+00:804A 203580          	    68:   jsr inc_insert
+00:804D 68              	    69:   pla
+00:804E 9125            	    70:   sta (insert_ptr),y
+00:8050 203580          	    71:   jsr inc_insert
+00:8053 60              	    72:   rts
+                        	    73: 
+                        	    74: ; get a value in hex, and return it in A (TODO: support binary (%) and decimal)
+                        	    75: get_val:
+00:8054 2046C0          	    76:   jsr get_key
+00:8057 C924            	    77:   cmp #"$"
+00:8059 D004            	    78:   bne _get_val_not_hex
+00:805B 204CC1          	    79:   jsr get_byte
+00:805E 60              	    80:   rts
+                        	    81: _get_val_not_hex:
+                        	    82: 
+00:805F C922            	    83:   cmp #$22 ; double quote
+00:8061 D009            	    84:   bne _get_val_not_char
+00:8063 2046C0          	    85:   jsr get_key
+00:8066 48              	    86:   pha
+00:8067 2046C0          	    87:   jsr get_key
+00:806A 68              	    88:   pla
+00:806B 60              	    89:   rts
+                        	    90: 
+                        	    91: _get_val_not_char:
+00:806C 4CFE80          	    92:   jmp bad_handler
+                        	    93: 
+                        	    94: ; get a word in hex and return it in a and x
+                        	    95: get_word:
+00:806F 2046C0          	    96:   jsr get_key
+00:8072 C924            	    97:   cmp #"$"
+00:8074 D00A            	    98:   bne _get_word_fail
+00:8076 204CC1          	    99:   jsr get_byte
+00:8079 48              	   100:   pha
+00:807A 204CC1          	   101:   jsr get_byte
+00:807D AA              	   102:   tax
+00:807E 68              	   103:   pla
+00:807F 60              	   104:   rts
+                        	   105: _get_word_fail:
+00:8080 4CFE80          	   106:   jmp bad_handler
+                        	   107: 
+                        	   108: ; print the insertion pointer
+                        	   109: print_addr:
+00:8083 A526            	   110:   lda insert_ptr+1
+00:8085 203BC1          	   111:   jsr hex_byte
+00:8088 8E0280          	   112:   stx SERIAL
+00:808B 8C0280          	   113:   sty SERIAL
+00:808E A525            	   114:   lda insert_ptr
+00:8090 203BC1          	   115:   jsr hex_byte
+00:8093 8E0280          	   116:   stx SERIAL
+00:8096 8C0280          	   117:   sty SERIAL
+00:8099 A93A            	   118:   lda #":"
+00:809B 8D0280          	   119:   sta SERIAL
+00:809E A920            	   120:   lda #" "
+00:80A0 8D0280          	   121:   sta SERIAL
+00:80A3 60              	   122:   rts
+                        	   123: 
+                        	   124: ; 1. match the xth element in the opcode table with the input buffer
+                        	   125: ; 2. if it matches, call the opcode handler
+                        	   126: ; 3. increment x by 5
+                        	   127: ; 4. return in y 1 if the opcode matched, otherwise 0
+                        	   128: dispatch:
+00:80A4 BD0C81          	   129:   lda opcode_table,x
+00:80A7 C520            	   130:   cmp opc_buf
+00:80A9 D026            	   131:   bne _dispatch_miss_1
+00:80AB E8              	   132:   inx
+00:80AC BD0C81          	   133:   lda opcode_table,x
+00:80AF C521            	   134:   cmp opc_buf+1
+00:80B1 D01D            	   135:   bne _dispatch_miss_2
+00:80B3 E8              	   136:   inx
+00:80B4 BD0C81          	   137:   lda opcode_table,x
+00:80B7 C522            	   138:   cmp opc_buf+2
+00:80B9 D014            	   139:   bne _dispatch_miss_3
+00:80BB E8              	   140:   inx
+                        	   141: 
+00:80BC BD0C81          	   142:   lda opcode_table,x
+00:80BF 8523            	   143:   sta opc_handler
+00:80C1 BD0D81          	   144:   lda opcode_table+1,x
+00:80C4 8524            	   145:   sta opc_handler+1
+                        	   146: 
+                        	   147:   ; there is no indirect jsr, so we do this
+00:80C6 20CC80          	   148:   jsr _dispatch_run
+00:80C9 A001            	   149:   ldy #1
+00:80CB 60              	   150:   rts
+                        	   151: _dispatch_run:
+00:80CC 6C2300          	   152:   jmp (opc_handler)
+                        	   153: 
+                        	   154: _dispatch_miss_3:
+00:80CF CA              	   155:   dex
+                        	   156: _dispatch_miss_2:
+00:80D0 CA              	   157:   dex
+                        	   158: _dispatch_miss_1:
+00:80D1 E8              	   159:   inx
+00:80D2 E8              	   160:   inx
+00:80D3 E8              	   161:   inx
+00:80D4 E8              	   162:   inx
+00:80D5 E8              	   163:   inx
+00:80D6 A000            	   164:   ldy #0
+00:80D8 60              	   165:   rts
+                        	   166: 
+                        	   167: ; opcode handlers:
+                        	   168: lda_handler:
+00:80D9 2046C0          	   169:   jsr get_key
+00:80DC C923            	   170:   cmp #"#"
+00:80DE D01E            	   171:   bne bad_handler ; TODO: add support for other addressing modes
+00:80E0 A9A9            	   172:   lda #$a9        ; insert the opcode
+00:80E2 203C80          	   173:   jsr insert_a
+00:80E5 205480          	   174:   jsr get_val     ; insert the immediate value
+00:80E8 203C80          	   175:   jsr insert_a
+00:80EB 60              	   176:   rts
+                        	   177: sta_handler:
+00:80EC A98D            	   178:   lda #$8d
+00:80EE 203C80          	   179:   jsr insert_a
+00:80F1 206F80          	   180:   jsr get_word
+00:80F4 204480          	   181:   jsr insert_ax
+00:80F7 60              	   182:   rts
+                        	   183: 
+                        	   184: rts_handler:
+00:80F8 A960            	   185:   lda #$60
+00:80FA 203C80          	   186:   jsr insert_a
+00:80FD 60              	   187:   rts
+                        	   188: 
+                        	   189: ; not a subroutine like the others, you can jump here if you
+                        	   190: ; encounter an error in parsing
+                        	   191: bad_handler:
+00:80FE 00              	   192:   brk
+00:80FF A93A            	   193:   lda #":"
+00:8101 8D0280          	   194:   sta SERIAL
+00:8104 A928            	   195:   lda #"("
+00:8106 8D0280          	   196:   sta SERIAL
+00:8109 4C0B80          	   197:   jmp mainloop
+                        	   198: 
+                        	   199: ; note to self: make sure to order these roughly by usage, so that
+                        	   200: ; dispatching is faster
+                        	   201: opcode_table:
+00:810C 6C6461          	   202:   .byte "lda"
+00:810F D980            	   203:   .word lda_handler
+00:8111 737461          	   204:   .byte "sta"
+00:8114 EC80            	   205:   .word sta_handler
+00:8116 727473          	   206:   .byte "rts"
+00:8119 F880            	   207:   .word rts_handler
+                        	   208: 
+
+
+Symbols by name:
+NEWLINE                          E:000A
+SERIAL                           E:8002
+_dispatch_loop_fail              A:8032
+_dispatch_miss_1                 A:80D1
+_dispatch_miss_2                 A:80D0
+_dispatch_miss_3                 A:80CF
+_dispatch_run                    A:80CC
+_get_val_not_char                A:806C
+_get_val_not_hex                 A:805F
+_get_word_fail                   A:8080
+_inc_insert_done                 A:803B
+bad_handler                      A:80FE
+dispatch                         A:80A4
+dispatch_loop                    A:8024
+get_byte                         E:C14C
+get_key                          E:C046
+get_val                          A:8054
+get_word                         A:806F
+hex_byte                         E:C13B
+inc_insert                       A:8035
+insert_a                         A:803C
+insert_ax                        A:8044
+insert_ptr                       E:0025
+lda_handler                      A:80D9
+main                             A:8003
+mainloop                         A:800B
+opc_buf                          E:0020
+opc_handler                      E:0023
+opcode_table                     A:810C
+print_addr                       A:8083
+rts_handler                      A:80F8
+sta_handler                      A:80EC
+
+Symbols by value:
+000A NEWLINE
+0020 opc_buf
+0023 opc_handler
+0025 insert_ptr
+8002 SERIAL
+8003 main
+800B mainloop
+8024 dispatch_loop
+8032 _dispatch_loop_fail
+8035 inc_insert
+803B _inc_insert_done
+803C insert_a
+8044 insert_ax
+8054 get_val
+805F _get_val_not_hex
+806C _get_val_not_char
+806F get_word
+8080 _get_word_fail
+8083 print_addr
+80A4 dispatch
+80CC _dispatch_run
+80CF _dispatch_miss_3
+80D0 _dispatch_miss_2
+80D1 _dispatch_miss_1
+80D9 lda_handler
+80EC sta_handler
+80F8 rts_handler
+80FE bad_handler
+810C opcode_table
+C046 get_key
+C13B hex_byte
+C14C get_byte
