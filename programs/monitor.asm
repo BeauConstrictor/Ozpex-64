@@ -79,6 +79,11 @@ get_key:
   cmp #"@"                ; if "@" was pressed,
   beq _get_key_new_addr   ; change address
 
+  cmp #"!"                ; if shift+1 was pressed,
+  beq _get_key_cs1        ; start cs1
+  cmp #$22                ; if shift+2 was pressed,
+  beq _get_key_cs2        ; start cs2
+
   cmp #">"                ; if "." was pressed,
   beq _get_key_addr_range ; print an address range
 
@@ -130,6 +135,12 @@ _get_key_comment:
   lda #BACKSPACE            ; move cursor back twice
   sta SERIAL
   jmp _get_key_comment
+_get_key_cs1:
+  jsr $8003
+  jmp loop
+_get_key_cs2:
+  jsr $a003
+  jmp loop
 _get_key_execute:
   lda #NEWLINE
   sta SERIAL
