@@ -34,6 +34,8 @@ Special keys and commands:
 - Read:  Type `>` followed by an address to print out the memory between your current address and that one (inclusive).
 - Execute: Typing an `x` will immediately transfer program execution to the current address. Programs can return with either `rts` or `jmp $fff8`.
 - Comment: A `;` enters comment mode. Characters typed afterward are ignored until enter is pressed.
+- Shift+1: This will immediately jump to cartridge slot 1.
+- Shift+2: This will immediately jump to cartridge slot 2.
 
 ## Cartridges
 
@@ -87,11 +89,7 @@ This program is a simple hexadecimal calculator, supporting just addition and su
 python3 main.py -1 rom:assembler
 ```
 
-This program lets you efficiently write hex data into memory, and is designed for writing programs. The programs keeps track of your current memory address, and starts it in $0200. You can enter bytes and they will be written into memory sequentially, starting at this address. At any time, press RET to see your current address. You can press `@` to move to a new address. You can also start a comment (some text which will be ignored, and not written) with `;`, which you can then end with RET.
-
-If you want to learn how to write your own software for the Ozpex 64, see [Easy 6502](https://skilldrick.github.io/easy6502/) - an excellent free, online and interactive eBook. Another good resource is Ben Eater's [video series on building and programming his own 6502 computer](https://www.youtube.com/watch?v=LnzuMJLZRdU&list=PLowKtXNTBypFbtuVMUVXNR0z1mu7dp7eH).
-
-Once you can write 6502 assembly, you're 90% of the way there. Just know that there are two ways to exit from an Ozpex 64 program, the first is to `rts` from the top-level of your program. This is usually the cleanest way to exit, but it is not always possible to exit from the top-level, so instead you can `jmp $fff8` - this address is the 'exit vector' and will re-enter the system monitor, without fully restarting it. You should also take a look at the Hardware section of this manual.
+This program makes it easier to type programs into memory (or a bbram) than entering bytes directly from the monitor. After putting its cartridge in slot 1, hit shift+1 on your keyboard to enable 'mnemonic mode' (return to normal mode with escape). In this mode, you can type assembly code and it will be immediately written into memory. You can also move with the `@` key, just as you would in the monitor, but to do anything else, you must return to normal mode. The program is currently very barebones, and not actually particularly useful, although this should change as the program matures.
 
 ### Miscellaneous
 
