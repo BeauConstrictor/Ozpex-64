@@ -1,110 +1,88 @@
 # Ozpex 64 Manual
 
-This guide explains how to set up the Ozpex 64 emulator, run software on it, and develop your own programs.
+The document provides an in-depth guide on how to set-up and use the Ozpex 64 Emulator and its included software.
 
-## System Overview
+## Setup
 
-The Ozpex 64 is a fictional computer based on the 6502 microprocessor. It includes:
+To install and test the emulator, run these commands:
 
-- 32 KB of RAM for user programs
-- 16 KB of ROM containing built-in system software
-- A serial port for input and output
-- A hardware timer for precise timing
-- Two 8 KB cartridge slots for external programs, expansions, or user data
-
-## Initial Setup
-
-Install and try Ozpex 64 like this:
-```sh
+```
 $ git clone https://github.com/BeauConstrictor/Ozpex-64
-$ cd ozpex-64
+$ cd Ozpex-64
 $ python main.py
 ```
 
-You should see a welcome message and a prompt, indicating that the computer has booted, and the included monitor is running.
+Once in the emulator, you should automatically be booted into the monitor program, as it is built into ROM. This program gives you a means to interact with the system and, most importantly, start more complex software, which brings me onto:
 
 ## The Monitor
 
-The monitor is a program built into rom that runs automatically on boot. It allows you to efficiently inspect memory, test hardware and write and run programs.
+The machine monitor is a simple yet powerful tool for managing memory on an Ozpex 64. The program keeps just one piece of state: your current memory address, which is used as an argument by all the operations available, which are:
 
-When started, the monitor will begin at an random memory address. Use the `@` key to move to a specific one. After pressing `@` followed by a 4-digit hex memory address, you can start typing byte values, which will be written sequentially into memory, starting from that address.
+- Writing: To write to memory, simply type out two hex characters and the byte will immediately be written into memory and your current address will be incremented so that your next write will come immediately after.
 
-Special keys and commands:
+- Reading: To read from memory, use a `>` sign and type out a memory address. The monitor will then read and print out the values of every memory address between your current address and the second one you typed.
+- Executing: Hitting an `x` will jump to your current address and run it as a subroutine, so the program that you run can return to the monitor using an `rts` instruction. Programs can also return by jumping directly to `$fff8`. To make starting programs easier, you can use the `!` key to quickly start the program in slot 1, and the `"` key to start the program in slot 2.
+- Moving: You can move directly to a new address for any of the above operations using the `@` key, followed by a full hex memory address.
+- Commenting: If you type a `;`, characters afterward will be completely ignored until you press enter.
 
-- Read:  Type `>` followed by an address to print out the memory between your current address and that one (inclusive).
-- Execute: Typing an `x` will immediately transfer program execution to the current address. Programs can return with either `rts` or `jmp $fff8`.
-- Comment: A `;` enters comment mode. Characters typed afterward are ignored until enter is pressed.
-- Shift+1: This will immediately jump to cartridge slot 1.
-- Shift+2: This will immediately jump to cartridge slot 2.
+## Included Software
 
-## Cartridges
+The Ozpex 64 repository includes several pieces of included software, two of which have already been mentioned.
 
-Before you can use this command, you will need actually insert something into a cartridge slot, which you can do like this:
+- Pong: This is a game for the Ozpex, and uses just the serial port for I/O. It is deterministic, so the game plays out in the same way every time. Move with W & S.
+- Calc: This is a simple hex calculator that operates on single bytes, supporting just addition and subtraction.
+- Editor: This is a simple text editor that saves to a BBRAM in CS2 on exit. It only supports 256 byte documents, and you cannot move your cursor from the end of the buffer when editing.
+- Miscellaneous: There are also some other small programs that predate the monitor itself and just exist for testing various pieces of the emulator. You can find these in the `./programs` directory, but they are quite poorly written, so I wouldn't use them for practice.
 
-```sh
-$ python main.py -1 rom:calc
-```
+## Writing Your Own Software
 
-This command will start the emulator with the Calculator program in cartridge slot 1 - usually, programs are designed for cartridge slot 1 and data that they operate on goes in slot 2. This computer has no concept of a filesystem, so a separate cartridge is needed for each 'file' that you want to work on. If you had a physical version of this computer, you would organise these cartridges physically instead of in software like in a modern computer. Once you're in the emulator, you can run this program with `@8003x`.
-
-You can also use the `-2` option if you want to load something into the second cartridge slot.
-
-The syntax for this option is as follows:
-
-```
-[-x/--slotx] [rom/bbram]:<name>
-```
-
-Where x is the slot to put the cartridge in, rom is *read-only memory* (most programs will use rom), bbram is *battery-backed ram* (this type of cartridge is used for your data - think text files, songs, etc.) and the name is the specific cartridge to load. To create a new text file for use with the editor program, you can do this:
-
-```
-$ python3 main.py -1 rom:editor -2 bbram:sometext
-```
-
-This will start the computer with the editor in cartridge slot 1 and your new text file in slot 2.
-
-## Software
-
-At this point, you know enough to start using some full software on your O64. The emulator comes with a variety of programs for you to try, including one (the assembler) which is designed to help you write your own.
-
-### The Editor
-
-```sh
-python3 main.py -1 rom:editor
-```
-
-This program is a (very) simple text editor, which you can use keep notes and such. Once you are in the program, all you can do is type characters to add to the end of the file, and backspace to delete the last character you typed. To exit, press ESC which will first save your text to CS2, if you have a BBRAM there. It will reopen that file on startup, if you have it in CS2.
-
-### The Calculator
-
-```sh
-python3 main.py -1 rom:calc
-```
-
-This program is a simple hexadecimal calculator, supporting just addition and subtraction. You enter a two digit hex number, either a `+` or `-` and a second two digit hex number, and the result will immediately be displayed, before moving onto the second line for you to enter the next calculation. Press ESC to exit and return to the monitor.
+Using the monitor, you can type your own programs into the machine and run them, but this isn't exactly an ideal development environment. There are 2 other ways to develop software targeting the Ozpex 64.
 
 ### The Assembler
 
-```sh
-python3 main.py -1 rom:assembler
+The Assembler makes it easier to enter programs into an Ozpex 64 by using instruction mnemonics. To use the assembler, put it in cartridge slot 1:
+
+```
+$ python main.py -1 rom:assembler
 ```
 
-This program makes it easier to type programs into memory (or a bbram) than entering bytes directly from the monitor. After putting its cartridge in slot 1, hit shift+1 on your keyboard to enable 'mnemonic mode' (return to normal mode with escape). In this mode, you can type assembly code and it will be immediately written into memory. You can also move with the `@` key, just as you would in the monitor, but to do anything else, you must return to normal mode. The program is currently very barebones, and not actually particularly useful, although this should change as the program matures.
+You can then enter mnemonic mode with the `!` key (you can leave the assembler again with escape). The assembler behaves similarly to the monitor, but with a few key differences:
 
-### Miscellaneous
+- Input is buffered, so nothing actually happens until you press enter, unlike in the monitor. This makes it easier to correct mistakes.
+- You cannot read or execute memory in the assembler, so you must hit ESC, perform the operation, and then use `!` to re-enter the assembler.
 
-There are also a variety of other, much more basic ROMs which you can try out. Here is a full list:
+If you are happy with your program, you can write it to a BBRAM (a cartridge that you can write to) and load it whenever. This command will put a BBRAM in CS2:
 
-- `classic-loop`: Outputs 'Hello, world!' in a loop, often the first program people write on BASIC.
-- `counter`: Counts up to 9 in an infinite loop.
-- `hello-world`: Outputs the text `Hello, world!` and `Goodbye, world!`
-- `timer`: Counts up by 1 in hexadecimal every second.
+```
+$ python main.py -1 rom:assembler -2 bbram:myprog
+```
+
+You can then jump to CS2 in the assembler like this:
+
+```
+(mnemonic mode)
+9185: @a003
+
+a003: ; you can start writing code here
+```
+
+### External Environment
+
+Most software for the Ozpex 64 is not developed on the computer itself. It is written in an assembly file in the `./programs` directory of this repository and built using `./build.sh`. This will automatically assemble the file into a format that can be loaded as a cartridge. The script will also put a file in `./apis` that contains the memory addresses for all the subroutines and variables in the program, so that you can debug from the monitor.
+
+This setup will require you to have [vasm](http://compilers.de/vasm.html) installed on your computer, and have somewhere to edit plain text documents.
+
+### Writing 6502 Assembly
+
+Any programs you write for the Ozpex 64 will have to be written in assembly. This can sound daunting, but learning assembly can be incredibly rewarding and is that primary reason that the Ozpex 64 exists. Assembly is quite a departure from other programming languages, including languages like C which are usually considered very low-level. It is like this simply because assembly is the most accurate representation of what *exactly* your CPU is doing when it runs code (that you can reasonably write complex software with). This language is more precisely known as *6502 assembly* and you can find many guides online, such the interactive guide [Easy 6502](https://skilldrick.github.io/easy6502/), or [Ben Eater's video series](https://www.youtube.com/watch?v=LnzuMJLZRdU&list=PLowKtXNTBypFbtuVMUVXNR0z1mu7dp7eH) where he builds his own computer based on the 6502.
+
+None of these guides however are specifically compatible with the Ozpex 64, but once you have learnt the basics of 6502 assembly, it is not a big leap to go to writing full programs for this machine - you just need to know how to interface with the hardware using memory mapped I/O. Here is everything you need to know:
 
 ## Hardware
 
 This is the computer's memory map:
 
-```plain
+```
 RAM: 0x0000 -> 0x7fff
 Timer: 0x8000 + 0x8001
 Serial: 0x8002
@@ -115,20 +93,20 @@ ROM: 0xc003 -> 0xffff
 
 ### Timer
 
-The hardware timer is very simple to interface with and does not emit interrupts, so it must be handled through polling.
+The computer features a simple hardware timer to help you measure precise time intervals, as the computer does not run at a set clock speed, so games would be very inconsistent without one. It is very simple to interface with and does not emit interrupts, so you must use polling to measure time.
 
-Writing (any value) to address `0x8000` (register A) will cause the timer to start, so that reading from the timer (discussed below) will cause it to emit the amount of time elapsed since this start point.
+Writing (any value) to address 0x8000 (register A on the timer) will cause the timer to start, so that reading from the timer (discussed below) will cause it to emit the amount of time elapsed since this start point.
 
-Writing to address `0x8001` (register B) will set the units of the timer. Essentially, the timer will divide the time elapsed (in milliseconds) by this value whenever you read it, allowing you to increase the maximum length of time (up to 4.6 hours) that can fit into 16 bits, at the cost of precision - the timer will wrap if it exceeds this value.
+Writing to address 0x8001 (register B) will set the units of the timer. Essentially, the timer will divide the time elapsed (in milliseconds) by this value whenever you read it, allowing you to increase the maximum length of time (up to 4.6 hours) that can fit into 16 bits, at the cost of precision - the timer will wrap if it exceeds this value.
 
 Reading from register B will return the high byte of the time elapsed since the last write to register A. Reading from register A will return the low byte.
 
-### Serial
+#### Serial
 
-The UART provides a simple interface to the computer, but, like the timer, does not generate interrupts, so polling must be used to check for keypresses.
+The Ozpex 64 does not feature a video display of any kind, to make simple programs easier to write, instead you use a serial port that outputs to a text terminal.
 
-Writing to address `0x8002` will cause the byte written to be sent to the terminal. There is no need to flush output, and it will appear immediately on the terminal
+The UART (serial port) like the timer, does not generate interrupts, so polling must be used to check for keypresses.
 
-Reading to that address will return the last character that was typed, and overwrite this value with nul to prevent duplicate reads (this assumes that the nul character will never be typed manually, as it would have to be ignored, but simplifies reading logic somewhat).
+Writing to address 0x8002 will cause the byte written to be sent directly to the terminal. There is no need to flush output, and it will appear immediately on the terminal.
 
-The UART has special handling for ASCII device control 1, which simply clears the screen and returns the cursor to the home position. There is potential for more in the future.
+Reading to that address will return the last character that was typed, and overwrite this value with null ($00) to prevent duplicate reads, which allows you to simply `bne` to check if a key has been pressed.

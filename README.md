@@ -39,3 +39,11 @@ $ python main.py 1 rom:assembler -2 bbram:myprograms
 ```
 
 When you are in the mnemonic mode, you can type out assembly instructions and have them immediately written into memory upon hitting enter. While you can write programs this way, there is no support for labels, so must programs you write will simply be scripts that wrap subroutines included in ROM. In order to write more complex programs, you will want to assemble them using a modern tool such as [vasm](http://www.compilers.de/vasm.html). This repository includes a build script that will automatically assemble all programs in the `./programs` directory, and put the output in `./roms`, so that you can easily load your program as a cartridge. Also, an 'api' fill will be saved into the `./apis` directory, containing addresses of subroutines and variables used by the program.
+
+## The Manual
+
+If you want to dive deeper into the included software, or try to create your own, I would recommend reading the [manual](https://github.com/BeauConstrictor/Ozpex-64/blob/main/MANUAL.md), as it includes a much more in-depth guide on both of these things.
+
+## Contributing
+
+You are welcome to create your own tools and programs for the Ozpex 64, and I would love to see them, but please avoid making a PR to add them to my repo. Bug reports are also welcome regarding the emulator, but I accept that my assembly programs will inevitably be very buggy, so I would appreciate if you simply *ignore* any bugs you find in those.
