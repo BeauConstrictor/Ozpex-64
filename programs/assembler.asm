@@ -5,8 +5,10 @@ SERIAL   = $8002
 EXIT_VEC = $fff8
 
 ; ascii codes:
-NEWLINE = $0a
-ESCAPE  = $1b
+NEWLINE   = $0a
+ESCAPE    = $1b
+DELETE    = $7f
+BACKSPACE = $08
 
 ; memory allocation:
 BYTE_BUILD  = $40     ; 1 byte
@@ -14,6 +16,8 @@ PRINT       = $50     ;  1byte
 opc_buf     = $20     ; 3 bytes 
 opc_handler = $23     ; 2 bytes
 insert_ptr  = $30     ; 2 bytes (matches the monitor)
+input_buf   = $0200   ; 256 bytes
+input_ptr   = $10     ; 1 bytes
 
 main:
   lda #start_msg
@@ -26,6 +30,7 @@ mainloop:
   lda #NEWLINE
   sta SERIAL
   jsr print_addr
+  jsr get_line
   jsr get_key
   sta opc_buf
   jsr get_key
@@ -164,79 +169,82 @@ _dispatch_miss_1:
   ldy #0
   rts
 
-; opcode handlers:
-lda_handler:
-  jsr get_key
-  cmp #"#"
-  bne bad_handler ; TODO: add support for other addressing modes
-  lda #$a9        ; insert the opcode
-  jsr insert_a
-  jsr get_val     ; insert the immediate value
-  jsr insert_a
-  rts
-
-sta_handler:
-  lda #$8d
-  jsr insert_a
-  jsr get_word
-  jsr insert_ax
-  rts
-
-rts_handler:
-  lda #$60
-  jsr insert_a
-  rts
-
 ; not a subroutine like the others, you can jump here if you
 ; encounter an error in parsing
 bad_handler:
-  brk
-  lda #":"
-  sta SERIAL
-  lda #"("
-  sta SERIAL
+  lda #err_msg
+  sta PRINT
+  lda #>err_msg
+  sta PRINT+1
+  jsr print
   jmp mainloop
 
-; return (in a) a single key, ignoring spaces
-; modifies: a, x, y
-get_key:
+; buffer a line of input, null-terminated.
+get_line:
+  ldx #0
+  stx input_ptr
+_get_line_loop:
   lda SERIAL
-  beq get_key  ; if no char was typed, check again.
+  beq _get_line_loop ; if no key pressed, check again
+  
+  cmp #NEWLINE ; if enter pressed, write a null and exit
+  beq _get_line_done
 
-  cmp #ESCAPE  ; if esc was pressed,
-  beq _get_key_escape ; exit.
-  cmp #"@"     ; if "@" was pressed,
-  beq _get_key_new_addr  ; move to a new address.
+  cmp #DELETE ; if backspace pressed, remove last char
+  beq _get_line_backspace
+  cmp #BACKSPACE ; either of these codes may be emitted for a backspace by different terminals
+  beq _get_line_backspace
 
-  sta SERIAL   ; echo back the char.
+  cmp #ESCAPE
+  beq _get_line_escape ; if escape was pressed, immediately exit
 
-  cmp #" "     ; if space was pressed,
-  beq get_key  ; wait for the next key.
-
+  sta input_buf,x ; write the char to the input buffer
+  sta SERIAL ; echo back the char
+  inx
+  jmp _get_line_loop
+_get_line_done:
+  lda #0
+  sta input_buf,x
   rts
-_get_key_escape:
+_get_line_backspace:
+  lda #BACKSPACE
+  sta SERIAL
+  lda #" "
+  sta SERIAL
+  lda #BACKSPACE
+  sta SERIAL
+  dex
+_get_line_backspace_ignore:
+  jmp _get_line_loop
+_get_line_escape:
   lda #end_msg
   sta PRINT
   lda #>end_msg
   sta PRINT + 1
   jsr print
   jmp (EXIT_VEC)
-_get_key_new_addr:
-  lda #NEWLINE
-  sta SERIAL
-  sta SERIAL
 
-  jsr get_byte
+; expect from the input buffer and return (in a) a single key, ignoring spaces
+; modifies: a, x, y
+get_key:
+  ldx input_ptr
+  inc input_ptr ; move the buf ptr to the next char for the next call to get_Key
+  lda input_buf,x ; read the key from the buf
+  beq bad_handler ; if the input buffer is exhausted, throw error
+  cmp #"@"     ; if "@" was pressed,
+  beq _get_key_new_addr  ; move to a new address.
+  cmp #" "     ; if space was pressed,
+  beq get_key  ; skip the key.
+  rts
+
+_get_key_new_addr:
+  jsr get_byte ; expect a 2 byte memory address
   sta insert_ptr+1
   jsr get_byte
-  sta insert_ptr
-
-  lda #":"
+  sta insert_ptr ; move to the new address
+  lda #NEWLINE ; print a newline, to create a new visual block
   sta SERIAL
-  lda #" "
-  sta SERIAL
-
-  jmp get_key
+  jmp mainloop
 
 ; wait for a key and return (in a) the value of a single hex char
 ; modifies: a (duh)
@@ -327,6 +335,58 @@ end_msg:
   .byte NEWLINE
   .byte 0
 
+err_msg:
+  .byte NEWLINE
+  .byte "syntax error. check your new memory address before continuing."
+  .byte NEWLINE
+  .byte 0
+
+; opcode handlers:
+lda_handler:
+  jsr get_key
+  cmp #"#"
+  bne _lda_fail   ; TODO: add support for other addressing modes
+  lda #$a9        ; insert the opcode
+  jsr insert_a
+  jsr get_val     ; insert the immediate value
+  jsr insert_a
+  rts
+_lda_fail:
+  jmp bad_handler
+
+sta_handler:
+  lda #$8d
+  jsr insert_a
+  jsr get_word
+  jsr insert_ax
+  rts
+
+stx_handler:
+  lda #$8e
+  jsr insert_a
+  jsr get_word
+  jsr insert_ax
+  rts
+
+sty_handler:
+  lda #$8c
+  jsr insert_a
+  jsr get_word
+  jsr insert_ax
+  rts
+
+jsr_handler:
+  lda #$20
+  jsr insert_a
+  jsr get_word
+  jsr insert_ax
+  rts
+
+rts_handler:
+  lda #$60
+  jsr insert_a
+  rts
+
 ; note to self: make sure to order these roughly by usage, so that
 ; dispatching is faster
 opcode_table:
@@ -334,5 +394,11 @@ opcode_table:
   .word lda_handler
   .byte "sta"
   .word sta_handler
+  .byte "jsr"
+  .word jsr_handler
+  .byte "stx"
+  .word stx_handler
+  .byte "sty"
+  .word sty_handler
   .byte "rts"
   .word rts_handler
