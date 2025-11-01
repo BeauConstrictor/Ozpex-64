@@ -1,6 +1,6 @@
 # Ozpex 64
 
-The Ozpex 64 is a fictional 6502-based to experience what programming was like for developers in the 1980s. It is a simple system to develop for, while avoiding unnecessary abstractions. If you want to learn how computers work on a low level, the Ozpex 64 is simple enough to wrap your head around in an afternoon, but is complex enough to warrant experimentation.
+The Ozpex 64 is a fictional 6502-based computer meant to help you experience what programming was like for developers back in the '80s. It is a simple system to develop for, that avoids unnecessary abstractions in an effort to help you understand how hardware works at a low level. If you want to learn how computers really work, the Ozpex 64 should be simple enough to wrap your head around in an afternoon, but complex enough to warrant experimentation.
 
 ## System Details
 
