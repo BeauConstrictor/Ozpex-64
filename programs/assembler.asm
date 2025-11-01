@@ -353,21 +353,18 @@ lda_handler:
   rts
 _lda_fail:
   jmp bad_handler
-
 sta_handler:
   lda #$8d
   jsr insert_a
   jsr get_word
   jsr insert_ax
   rts
-
 stx_handler:
   lda #$8e
   jsr insert_a
   jsr get_word
   jsr insert_ax
   rts
-
 sty_handler:
   lda #$8c
   jsr insert_a
@@ -381,24 +378,91 @@ jsr_handler:
   jsr get_word
   jsr insert_ax
   rts
-
 rts_handler:
   lda #$60
   jsr insert_a
   rts
 
+tax_handler:
+  lda #$aa
+  jsr insert_a
+  rts
+tay_handler:
+  lda #$a8
+  jsr insert_a
+  rts
+txa_handler:
+  lda #$8a
+  jsr insert_a
+  rts
+tya_handler:
+  lda #$98
+  jsr insert_a
+  rts
+
+tsx_handler:
+  lda #$ba
+  jsr insert_a
+  rts
+txs_handler:
+  lda #$9a
+  jsr insert_a
+  rts
+pha_handler:
+  lda #$48
+  jsr insert_a
+  rts
+php_handler:
+  lda #$08
+  jsr insert_a
+  rts
+pla_handler:
+  lda #$68
+  jsr insert_a
+  rts
+plp_handler:
+  lda #$28
+  jsr insert_a
+  rts
+
 ; note to self: make sure to order these roughly by usage, so that
 ; dispatching is faster
+; note to self: 56 instructions * 5 bytes in 280 bytes! not all instructions will fit.
+; luckily, the os does not use interrupts, so the interrupt instructions can go, which
+; makes it fit. lucky!
 opcode_table:
   .byte "lda"
   .word lda_handler
   .byte "sta"
   .word sta_handler
-  .byte "jsr"
-  .word jsr_handler
   .byte "stx"
   .word stx_handler
   .byte "sty"
   .word sty_handler
+
   .byte "rts"
   .word rts_handler
+  .byte "jsr"
+  .word jsr_handler
+
+  .byte "tax"
+  .word tax_handler
+  .byte "tay"
+  .word tay_handler
+  .byte "txa"
+  .word txa_handler
+  .byte "tya"
+  .word tya_handler
+
+  .byte "tsx"
+  .word tsx_handler
+  .byte "txs"
+  .word txs_handler
+  .byte "pha"
+  .word pha_handler
+  .byte "php"
+  .word php_handler
+  .byte "pla"
+  .word pla_handler
+  .byte "plp"
+  .word plp_handler

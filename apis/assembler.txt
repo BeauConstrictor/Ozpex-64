@@ -1,5 +1,5 @@
 Sections:
-00: "org0001:8003" (8003-8274)
+00: "org0001:8003" (8003-82E2)
 
 
 Source: "programs/assembler.asm"
@@ -136,22 +136,22 @@ Source: "programs/assembler.asm"
                         	   131: ; 3. increment x by 5
                         	   132: ; 4. return in y 1 if the opcode matched, otherwise 0
                         	   133: dispatch:
-00:80AA BD5682          	   134:   lda opcode_table,x
+00:80AA BD9282          	   134:   lda opcode_table,x
 00:80AD C520            	   135:   cmp opc_buf
 00:80AF D026            	   136:   bne _dispatch_miss_1
 00:80B1 E8              	   137:   inx
-00:80B2 BD5682          	   138:   lda opcode_table,x
+00:80B2 BD9282          	   138:   lda opcode_table,x
 00:80B5 C521            	   139:   cmp opc_buf+1
 00:80B7 D01D            	   140:   bne _dispatch_miss_2
 00:80B9 E8              	   141:   inx
-00:80BA BD5682          	   142:   lda opcode_table,x
+00:80BA BD9282          	   142:   lda opcode_table,x
 00:80BD C522            	   143:   cmp opc_buf+2
 00:80BF D014            	   144:   bne _dispatch_miss_3
 00:80C1 E8              	   145:   inx
                         	   146: 
-00:80C2 BD5682          	   147:   lda opcode_table,x
+00:80C2 BD9282          	   147:   lda opcode_table,x
 00:80C5 8523            	   148:   sta opc_handler
-00:80C7 BD5782          	   149:   lda opcode_table+1,x
+00:80C7 BD9382          	   149:   lda opcode_table+1,x
 00:80CA 8524            	   150:   sta opc_handler+1
                         	   151: 
                         	   152:   ; there is no indirect jsr, so we do this
@@ -369,56 +369,120 @@ Source: "programs/assembler.asm"
 00:821C 60              	   353:   rts
                         	   354: _lda_fail:
 00:821D 4CDF80          	   355:   jmp bad_handler
-                        	   356: 
-                        	   357: sta_handler:
-00:8220 A98D            	   358:   lda #$8d
-00:8222 204280          	   359:   jsr insert_a
-00:8225 207580          	   360:   jsr get_word
-00:8228 204A80          	   361:   jsr insert_ax
-00:822B 60              	   362:   rts
-                        	   363: 
-                        	   364: stx_handler:
-00:822C A98E            	   365:   lda #$8e
-00:822E 204280          	   366:   jsr insert_a
-00:8231 207580          	   367:   jsr get_word
-00:8234 204A80          	   368:   jsr insert_ax
-00:8237 60              	   369:   rts
-                        	   370: 
-                        	   371: sty_handler:
-00:8238 A98C            	   372:   lda #$8c
-00:823A 204280          	   373:   jsr insert_a
-00:823D 207580          	   374:   jsr get_word
-00:8240 204A80          	   375:   jsr insert_ax
-00:8243 60              	   376:   rts
-                        	   377: 
-                        	   378: jsr_handler:
-00:8244 A920            	   379:   lda #$20
-00:8246 204280          	   380:   jsr insert_a
-00:8249 207580          	   381:   jsr get_word
-00:824C 204A80          	   382:   jsr insert_ax
-00:824F 60              	   383:   rts
-                        	   384: 
-                        	   385: rts_handler:
-00:8250 A960            	   386:   lda #$60
-00:8252 204280          	   387:   jsr insert_a
-00:8255 60              	   388:   rts
-                        	   389: 
-                        	   390: ; note to self: make sure to order these roughly by usage, so that
-                        	   391: ; dispatching is faster
-                        	   392: opcode_table:
-00:8256 6C6461          	   393:   .byte "lda"
-00:8259 0A82            	   394:   .word lda_handler
-00:825B 737461          	   395:   .byte "sta"
-00:825E 2082            	   396:   .word sta_handler
-00:8260 6A7372          	   397:   .byte "jsr"
-00:8263 4482            	   398:   .word jsr_handler
-00:8265 737478          	   399:   .byte "stx"
-00:8268 2C82            	   400:   .word stx_handler
-00:826A 737479          	   401:   .byte "sty"
-00:826D 3882            	   402:   .word sty_handler
-00:826F 727473          	   403:   .byte "rts"
-00:8272 5082            	   404:   .word rts_handler
-                        	   405: 
+                        	   356: sta_handler:
+00:8220 A98D            	   357:   lda #$8d
+00:8222 204280          	   358:   jsr insert_a
+00:8225 207580          	   359:   jsr get_word
+00:8228 204A80          	   360:   jsr insert_ax
+00:822B 60              	   361:   rts
+                        	   362: stx_handler:
+00:822C A98E            	   363:   lda #$8e
+00:822E 204280          	   364:   jsr insert_a
+00:8231 207580          	   365:   jsr get_word
+00:8234 204A80          	   366:   jsr insert_ax
+00:8237 60              	   367:   rts
+                        	   368: sty_handler:
+00:8238 A98C            	   369:   lda #$8c
+00:823A 204280          	   370:   jsr insert_a
+00:823D 207580          	   371:   jsr get_word
+00:8240 204A80          	   372:   jsr insert_ax
+00:8243 60              	   373:   rts
+                        	   374: 
+                        	   375: jsr_handler:
+00:8244 A920            	   376:   lda #$20
+00:8246 204280          	   377:   jsr insert_a
+00:8249 207580          	   378:   jsr get_word
+00:824C 204A80          	   379:   jsr insert_ax
+00:824F 60              	   380:   rts
+                        	   381: rts_handler:
+00:8250 A960            	   382:   lda #$60
+00:8252 204280          	   383:   jsr insert_a
+00:8255 60              	   384:   rts
+                        	   385: 
+                        	   386: tax_handler:
+00:8256 A9AA            	   387:   lda #$aa
+00:8258 204280          	   388:   jsr insert_a
+00:825B 60              	   389:   rts
+                        	   390: tay_handler:
+00:825C A9A8            	   391:   lda #$a8
+00:825E 204280          	   392:   jsr insert_a
+00:8261 60              	   393:   rts
+                        	   394: txa_handler:
+00:8262 A98A            	   395:   lda #$8a
+00:8264 204280          	   396:   jsr insert_a
+00:8267 60              	   397:   rts
+                        	   398: tya_handler:
+00:8268 A998            	   399:   lda #$98
+00:826A 204280          	   400:   jsr insert_a
+00:826D 60              	   401:   rts
+                        	   402: 
+                        	   403: tsx_handler:
+00:826E A9BA            	   404:   lda #$ba
+00:8270 204280          	   405:   jsr insert_a
+00:8273 60              	   406:   rts
+                        	   407: txs_handler:
+00:8274 A99A            	   408:   lda #$9a
+00:8276 204280          	   409:   jsr insert_a
+00:8279 60              	   410:   rts
+                        	   411: pha_handler:
+00:827A A948            	   412:   lda #$48
+00:827C 204280          	   413:   jsr insert_a
+00:827F 60              	   414:   rts
+                        	   415: php_handler:
+00:8280 A908            	   416:   lda #$08
+00:8282 204280          	   417:   jsr insert_a
+00:8285 60              	   418:   rts
+                        	   419: pla_handler:
+00:8286 A968            	   420:   lda #$68
+00:8288 204280          	   421:   jsr insert_a
+00:828B 60              	   422:   rts
+                        	   423: plp_handler:
+00:828C A928            	   424:   lda #$28
+00:828E 204280          	   425:   jsr insert_a
+00:8291 60              	   426:   rts
+                        	   427: 
+                        	   428: ; note to self: make sure to order these roughly by usage, so that
+                        	   429: ; dispatching is faster
+                        	   430: ; note to self: 56 instructions * 5 bytes in 280 bytes! not all instructions will fit.
+                        	   431: ; luckily, the os does not use interrupts, so the interrupt instructions can go, which
+                        	   432: ; makes it fit. lucky!
+                        	   433: opcode_table:
+00:8292 6C6461          	   434:   .byte "lda"
+00:8295 0A82            	   435:   .word lda_handler
+00:8297 737461          	   436:   .byte "sta"
+00:829A 2082            	   437:   .word sta_handler
+00:829C 737478          	   438:   .byte "stx"
+00:829F 2C82            	   439:   .word stx_handler
+00:82A1 737479          	   440:   .byte "sty"
+00:82A4 3882            	   441:   .word sty_handler
+                        	   442: 
+00:82A6 727473          	   443:   .byte "rts"
+00:82A9 5082            	   444:   .word rts_handler
+00:82AB 6A7372          	   445:   .byte "jsr"
+00:82AE 4482            	   446:   .word jsr_handler
+                        	   447: 
+00:82B0 746178          	   448:   .byte "tax"
+00:82B3 5682            	   449:   .word tax_handler
+00:82B5 746179          	   450:   .byte "tay"
+00:82B8 5C82            	   451:   .word tay_handler
+00:82BA 747861          	   452:   .byte "txa"
+00:82BD 6282            	   453:   .word txa_handler
+00:82BF 747961          	   454:   .byte "tya"
+00:82C2 6882            	   455:   .word tya_handler
+                        	   456: 
+00:82C4 747378          	   457:   .byte "tsx"
+00:82C7 6E82            	   458:   .word tsx_handler
+00:82C9 747873          	   459:   .byte "txs"
+00:82CC 7482            	   460:   .word txs_handler
+00:82CE 706861          	   461:   .byte "pha"
+00:82D1 7A82            	   462:   .word pha_handler
+00:82D3 706870          	   463:   .byte "php"
+00:82D6 8082            	   464:   .word php_handler
+00:82D8 706C61          	   465:   .byte "pla"
+00:82DB 8682            	   466:   .word pla_handler
+00:82DD 706C70          	   467:   .byte "plp"
+00:82E0 8C82            	   468:   .word plp_handler
+                        	   469: 
 
 
 Symbols by name:
@@ -475,7 +539,11 @@ main                             A:8003
 mainloop                         A:800E
 opc_buf                          E:0020
 opc_handler                      E:0023
-opcode_table                     A:8256
+opcode_table                     A:8292
+pha_handler                      A:827A
+php_handler                      A:8280
+pla_handler                      A:8286
+plp_handler                      A:828C
 print                            A:8194
 print_addr                       A:8089
 rts_handler                      A:8250
@@ -483,6 +551,12 @@ sta_handler                      A:8220
 start_msg                        A:81A6
 stx_handler                      A:822C
 sty_handler                      A:8238
+tax_handler                      A:8256
+tay_handler                      A:825C
+tsx_handler                      A:826E
+txa_handler                      A:8262
+txs_handler                      A:8274
+tya_handler                      A:8268
 
 Symbols by value:
 0008 BACKSPACE
@@ -544,5 +618,15 @@ Symbols by value:
 8238 sty_handler
 8244 jsr_handler
 8250 rts_handler
-8256 opcode_table
+8256 tax_handler
+825C tay_handler
+8262 txa_handler
+8268 tya_handler
+826E tsx_handler
+8274 txs_handler
+827A pha_handler
+8280 php_handler
+8286 pla_handler
+828C plp_handler
+8292 opcode_table
 FFF8 EXIT_VEC

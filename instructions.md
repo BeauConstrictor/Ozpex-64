@@ -31,59 +31,60 @@ itself will be accessed.
 
 This is a list of the instructions that I have completed, and the ones that I have left to complete.
 
-- [x] ADC
-- [ ] AND
-- [x] ASL
-- [x] BCC
-- [x] BCS
-- [x] BEQ
-- [ ] BIT
-- [ ] BMI
-- [x] BNE
-- [ ] BPL
-- [ ] BRK
-- [ ] BVC
-- [ ] BVS
-- [x] CLC
-- [x] CLD
-- [x] CLI
-- [x] CLV
-- [x] CMP
-- [x] CPX
-- [x] CPY
-- [ ] DEC
-- [ ] DEX
-- [ ] DEY
-- [ ] EOR
-- [x] INC
-- [x] INX
-- [x] INY
-- [x] JMP
-- [x] JSR
-- [x] LDA
-- [x] LDX
-- [x] LDY
-- [x] LSR
-- [x] NOP
-- [ ] ORA
-- [x] PHA
-- [ ] PHP
-- [x] PLA
-- [ ] PLP
-- [ ] ROL
-- [ ] ROR
-- [ ] RTI
-- [x] RTS
-- [x] SBC
-- [x] SEC
-- [x] SED
-- [x] SEI
-- [x] STA
-- [x] STX
-- [x] STY
-- [x] TAX
-- [x] TAY
-- [x] TSX
-- [x] TXA
-- [x] TXS
-- [x] TYA
+  Emu Asm
+- [x] [ ] ADC
+- [ ] [ ] AND
+- [x] [ ] ASL
+- [x] [ ] BCC
+- [x] [ ] BCS
+- [x] [ ] BEQ
+- [ ] [ ] BIT
+- [ ] [ ] BMI
+- [x] [ ] BNE
+- [ ] [ ] BPL
+- [ ] [-] BRK
+- [ ] [ ] BVC
+- [ ] [ ] BVS
+- [x] [ ] CLC
+- [x] [-] CLD
+- [x] [-] CLI
+- [x] [ ] CLV
+- [x] [ ] CMP
+- [x] [ ] CPX
+- [x] [ ] CPY
+- [ ] [ ] DEC
+- [ ] [ ] DEX
+- [ ] [ ] DEY
+- [ ] [ ] EOR
+- [x] [ ] INC
+- [x] [ ] INX
+- [x] [ ] INY
+- [x] [ ] JMP
+- [x] [x] JSR
+- [x] [x] LDA
+- [x] [x] LDX
+- [x] [x] LDY
+- [x] [ ] LSR
+- [x] [ ] NOP
+- [ ] [ ] ORA
+- [x] [ ] PHA
+- [ ] [ ] PHP
+- [x] [ ] PLA
+- [ ] [ ] PLP
+- [ ] [ ] ROL
+- [ ] [ ] ROR
+- [ ] [-] RTI
+- [x] [x] RTS
+- [x] [ ] SBC
+- [x] [ ] SEC
+- [x] [-] SED
+- [x] [-] SEI
+- [x] [x] STA
+- [x] [x] STX
+- [x] [x] STY
+- [x] [ ] TAX
+- [x] [ ] TAY
+- [x] [ ] TSX
+- [x] [ ] TXA
+- [x] [ ] TXS
+- [x] [ ] TYA
