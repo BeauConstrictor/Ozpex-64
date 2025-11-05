@@ -1,3 +1,4 @@
+import os.path
 import argparse
 from sys import stderr
 from time import sleep
@@ -21,7 +22,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("-2", "--slot2")
     
     parser.add_argument("-r", "--rom",
-                        default="roms/monitor.bin",
+                        default=os.path.join(os.path.dirname(os.path.realpath(__file__)), "roms", "monitor.bin"),
                         help="overwrite the default monitor rom")
     
     parser.add_argument("-d", "--debug",

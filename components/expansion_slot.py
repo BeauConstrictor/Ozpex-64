@@ -58,7 +58,7 @@ class RamExpansion:
     
 class BbRamExpansion:
     def __init__(self, name: str) -> None:
-        self.path = os.path.join("bbrams", name + ".bin")
+        self.path = name
         self.addresses = bytearray(0x2000)
 
         if os.path.exists(self.path):

@@ -18,6 +18,7 @@ opc_handler = $23     ; 2 bytes
 insert_ptr  = $30     ; 2 bytes (matches the monitor)
 input_buf   = $0200   ; 256 bytes
 input_ptr   = $10     ; 1 bytes
+word_build  = $05     ; 2 bytes
 
 main:
   lda #start_msg
@@ -343,13 +344,24 @@ err_msg:
 
 ; opcode handlers:
 lda_handler:
+  ; immediate addressing
   jsr get_key
   cmp #"#"
-  bne _lda_fail   ; TODO: add support for other addressing modes
+  bne _lda_not_immediate   ; TODO: add support for other addressing modes
   lda #$a9        ; insert the opcode
   jsr insert_a
   jsr get_val     ; insert the immediate value
   jsr insert_a
+  rts
+_lda_not_immediate:
+  ; absolute addressing
+  cmp #"$"
+  bne _lda_fail
+  lda #$ad
+  jsr insert_a
+  dec input_ptr
+  jsr get_word
+  jsr insert_ax
   rts
 _lda_fail:
   jmp bad_handler
