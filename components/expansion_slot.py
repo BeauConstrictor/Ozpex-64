@@ -1,4 +1,5 @@
 from typing import Callable
+from random import randint
 import os.path
 
 from components.mm_component import MemoryMappedComponent
@@ -19,7 +20,7 @@ class ExpansionSlot(MemoryMappedComponent):
         return self.start <= addr <= self.end
     
     def fetch(self, addr: int) -> int:
-        if self.mount_read is None: return 0x00
+        if self.mount_read is None: return randint(0x00, 0xff)
         return self.mount_read(addr - self.start)
     
     def write(self, addr: int, val: int) -> None:
