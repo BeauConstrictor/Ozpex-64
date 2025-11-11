@@ -75,6 +75,10 @@ class Isa:
             0xd0: (self.bne, self.addr_relative),
             0xb0: (self.bcs, self.addr_relative),
             0x90: (self.bcc, self.addr_relative),
+            0x70: (self.bvs, self.addr_relative),
+            0x50: (self.bvc, self.addr_relative),
+            0x30: (self.bmi, self.addr_relative),
+            0x10: (self.bpl, self.addr_relative),
             
             0xe6: (self.inc, self.addr_zero_page),
             0xf6: (self.inc, self.addr_zero_page_x),
@@ -167,6 +171,15 @@ class Isa:
             0x01: (self.ora, self.addr_indexed_indirect),
             0x11: (self.ora, self.addr_indirect_indexed),
             
+            0x49: (self.eor, self.addr_immediate),
+            0x45: (self.eor, self.addr_zero_page),
+            0x55: (self.eor, self.addr_absolute_x),
+            0x4d: (self.eor, self.addr_absolute),
+            0x5d: (self.eor, self.addr_absolute_x),
+            0x59: (self.eor, self.addr_absolute_y),
+            0x41: (self.eor, self.addr_indexed_indirect),
+            0x51: (self.eor, self.addr_indirect_indexed),
+            
             0x29: (self.and_, self.addr_immediate),
             0x25: (self.and_, self.addr_zero_page),
             0x35: (self.and_, self.addr_zero_page_x),
@@ -178,6 +191,24 @@ class Isa:
             
             0x48: (self.pha, None),
             0x68: (self.pla, None),
+            
+            0x08: (self.php, None),
+            0x28: (self.plp, None),
+            
+            0x2a: (self.rol, self.addr_accumulator),
+            0x26: (self.rol, self.addr_zero_page),
+            0x36: (self.rol, self.addr_zero_page_x),
+            0x2e: (self.rol, self.addr_absolute),
+            0x3e: (self.rol, self.addr_absolute_x),
+            
+            0x6a: (self.ror, self.addr_accumulator),
+            0x66: (self.ror, self.addr_zero_page),
+            0x76: (self.ror, self.addr_zero_page_x),
+            0x6e: (self.ror, self.addr_absolute),
+            0x7e: (self.ror, self.addr_absolute_x),
+            
+            0x24: (self.bit, self.addr_zero_page),
+            0x2c: (self.bit, self.addr_absolute),
         }
         
     def addr_immediate(self) -> int:
@@ -293,6 +324,14 @@ class Isa:
         if self.cpu.carry: self.cpu.pc = addr
     def bcc(self, addr: int, opcode: int) -> int:
         if not self.cpu.carry: self.cpu.pc = addr
+    def bve(self, addr: int, opcode: int) -> int:
+        if self.cpu.overflow: self.cpu.pc = addr
+    def bvc(self, addr: int, opcode: int) -> int:
+        if not self.cpu.overflow: self.cpu.pc = addr
+    def bmi(self, addr: int, opcode: int) -> int:
+        if self.cpu.negative: self.cpu.pc = addr
+    def bpl(self, addr: int, opcode: int) -> int:
+        if not self.cpu.negative: self.cpu.pc = addr
         
     def add_val(self, val: int, add: int) -> int:
         result = (val + add) & 0xff
@@ -410,6 +449,9 @@ class Isa:
     def ora(self, addr: int, opcode: int) -> None:
         self.cpu.ra = self.transfer(self.cpu.ra | self.cpu.fetch(addr))
         
+    def eor(self, addr: int, opcode: int) -> None:
+        self.cpu.ra = self.transfer(self.cpu.ra ^ self.cpu.fetch(addr))
+        
     def and_(self, addr: int, opcode: int) -> None:
         self.cpu.ra = self.transfer(self.cpu.ra & self.cpu.fetch(addr))
         
@@ -417,6 +459,30 @@ class Isa:
         self.cpu.push_byte(self.cpu.ra)
     def pla(self, addr: int, opcode: int) -> None:
         self.cpu.ra = self.cpu.pop_byte()
+        
+    def php(self, addr: int, opcode: int) -> None:
+        self.cpu.push_byte(self.cpu.pack_status())
+    def plp(self, addr: int, opcode: int) -> None:
+        self.cpu.unpack_status(self.cpu.pop_byte())
+        
+    def rol(self, addr: int, opcode: int) -> None:
+        value = self.cpu.fetch(addr)
+        result = (value << 1) | (1 if self.cpu.carry else 0)
+        result &= 0xff
+        self.cpu.carry = get_bit(value, 7)
+        self.cpu.write(addr, self.transfer(result))
+    def ror(self, addr: int, opcode: int) -> None:
+        value = self.cpu.fetch(addr)
+        result = (value >> 1) | (0b10000000 if self.cpu.carry else 0)
+        result &= 0xff
+        self.cpu.carry = get_bit(value, 0)
+        self.cpu.write(addr, self.transfer(result))
+        
+    def bit(self, addr: int, opcode: int) -> None:
+        value = self.cpu.fetch(addr)
+        self.cpu.zero = (self.cpu.accumulator & value) == 0
+        self.cpu.overflow = get_bit(value, 6)
+        self.cpu.negative = get_bit(value, 7)
 
 class Cpu:
     def __init__(self, components: dict[str, MemoryMappedComponent]) -> None:

@@ -31,60 +31,61 @@ itself will be accessed.
 
 This is a list of the instructions that I have completed, and the ones that I have left to complete.
 
-  Emu Asm
-- [x] [ ] ADC
-- [ ] [ ] AND
-- [x] [ ] ASL
-- [x] [ ] BCC
-- [x] [ ] BCS
-- [x] [ ] BEQ
-- [ ] [ ] BIT
-- [ ] [ ] BMI
-- [x] [ ] BNE
-- [ ] [ ] BPL
-- [ ] [-] BRK
-- [ ] [ ] BVC
-- [ ] [ ] BVS
-- [x] [ ] CLC
-- [x] [-] CLD
-- [x] [-] CLI
-- [x] [ ] CLV
-- [x] [ ] CMP
-- [x] [ ] CPX
-- [x] [ ] CPY
-- [ ] [ ] DEC
-- [ ] [ ] DEX
-- [ ] [ ] DEY
-- [ ] [ ] EOR
-- [x] [ ] INC
-- [x] [ ] INX
-- [x] [ ] INY
-- [x] [ ] JMP
-- [x] [x] JSR
-- [x] [x] LDA
-- [x] [x] LDX
-- [x] [x] LDY
-- [x] [ ] LSR
-- [x] [ ] NOP
-- [ ] [ ] ORA
-- [x] [ ] PHA
-- [ ] [ ] PHP
-- [x] [ ] PLA
-- [ ] [ ] PLP
-- [ ] [ ] ROL
-- [ ] [ ] ROR
-- [ ] [-] RTI
-- [x] [x] RTS
-- [x] [ ] SBC
-- [x] [ ] SEC
-- [x] [-] SED
-- [x] [-] SEI
-- [x] [x] STA
-- [x] [x] STX
-- [x] [x] STY
-- [x] [ ] TAX
-- [x] [ ] TAY
-- [x] [ ] TSX
-- [x] [ ] TXA
-- [x] [ ] TXS
-- [x] [ ] TYA
+Items with a `[-]` are not planned to be implemented.
+
+- [x] ADC
+- [x] AND
+- [x] ASL
+- [x] BCC
+- [x] BCS
+- [x] BEQ
+- [x] BIT
+- [x] BMI
+- [x] BNE
+- [x] BPL
+- [-] BRK
+- [x] BVC
+- [x] BVS
+- [x] CLC
+- [x] CLD
+- [x] CLI
+- [x] CLV
+- [x] CMP
+- [x] CPX
+- [x] CPY
+- [x] DEC
+- [x] DEX
+- [x] DEY
+- [x] EOR
+- [x] INC
+- [x] INX
+- [x] INY
+- [x] JMP
+- [x] JSR
+- [x] LDA
+- [x] LDX
+- [x] LDY
+- [x] LSR
+- [x] NOP
+- [x] ORA
+- [x] PHA
+- [x] PHP
+- [x] PLA
+- [x] PLP
+- [x] ROL
+- [x] ROR
+- [-] RTI
+- [x] RTS
+- [x] SBC
+- [x] SEC
+- [x] SED
+- [x] SEI
+- [x] STA
+- [x] STX
+- [x] STY
+- [x] TAX
+- [x] TAY
+- [x] TSX
+- [x] TXA
+- [x] TXS
+- [x] TYA
