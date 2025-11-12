@@ -324,7 +324,7 @@ class Isa:
         if self.cpu.carry: self.cpu.pc = addr
     def bcc(self, addr: int, opcode: int) -> int:
         if not self.cpu.carry: self.cpu.pc = addr
-    def bve(self, addr: int, opcode: int) -> int:
+    def bvs(self, addr: int, opcode: int) -> int:
         if self.cpu.overflow: self.cpu.pc = addr
     def bvc(self, addr: int, opcode: int) -> int:
         if not self.cpu.overflow: self.cpu.pc = addr
@@ -357,7 +357,7 @@ class Isa:
         self.cpu.ry = self.add_val(self.cpu.ry, -1)
         
     def jsr(self, addr: int, opcode: int) -> None:
-        rts_bytes = break_word(self.cpu.pc - 1) # or is it + 1?
+        rts_bytes = break_word(self.cpu.pc - 1)
         self.cpu.push_byte(rts_bytes[1])
         self.cpu.push_byte(rts_bytes[0])
         self.cpu.pc = addr
@@ -440,11 +440,11 @@ class Isa:
     def asl(self, addr: int, opcode: int) -> None:
         value = self.cpu.fetch(addr)
         self.cpu.carry = get_bit(value, 7)
-        self.cpu.ra = self.transfer(value << 1 & 0xff)
+        self.cpu.write( addr, self.transfer(value << 1 & 0xff) )
     def lsr(self, addr: int, opcode: int) -> None:
         value = self.cpu.fetch(addr)
-        self.cpu.carry = get_bit(value, 7)
-        self.cpu.ra = self.transfer(value >> 1 & 0xff)
+        self.cpu.carry = get_bit(value, 0)
+        self.cpu.write( addr, self.transfer(value >> 1 & 0xff) )
         
     def ora(self, addr: int, opcode: int) -> None:
         self.cpu.ra = self.transfer(self.cpu.ra | self.cpu.fetch(addr))
@@ -480,7 +480,7 @@ class Isa:
         
     def bit(self, addr: int, opcode: int) -> None:
         value = self.cpu.fetch(addr)
-        self.cpu.zero = (self.cpu.accumulator & value) == 0
+        self.cpu.zero = (self.cpu.ra & value) == 0
         self.cpu.overflow = get_bit(value, 6)
         self.cpu.negative = get_bit(value, 7)
 
