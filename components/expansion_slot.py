@@ -28,9 +28,7 @@ class ExpansionSlot(MemoryMappedComponent):
         self.mount_write(addr - self.start, val)
         
 class RomExpansion:
-    def __init__(self, name: str) -> None:
-        path = os.path.join("roms", name + ".bin")
-        
+    def __init__(self, path: str) -> None:
         self.addresses = bytearray(0x2000)
         
         with open(path, "rb") as f:
@@ -48,7 +46,6 @@ class RomExpansion:
 
 class RamExpansion:
     def __init__(self, name: str) -> None:
-        self.path = os.path.join("roms", name + ".bin")
         self.addresses = bytearray(0x2000)
 
     def read(self, addr: int) -> int:
@@ -58,8 +55,8 @@ class RamExpansion:
         self.addresses[addr] = val & 0xff
     
 class BbRamExpansion:
-    def __init__(self, name: str) -> None:
-        self.path = name
+    def __init__(self, path: str) -> None:
+        self.path = path
         self.addresses = bytearray(0x2000)
 
         if os.path.exists(self.path):
