@@ -1,6 +1,6 @@
 {
-    "Name": "ROM Monitor",
-    "ROM": "../roms/monitor.bin",
+    "Name": "Pong",
+    "ROM": "../roms/autorun.bin",
     "Cartridge A": "rom:../roms/pong.bin",
     "Cartridge B": null
 }

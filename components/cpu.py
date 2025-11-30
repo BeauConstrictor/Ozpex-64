@@ -6,6 +6,8 @@ from random import randint
 
 from components.mm_component import MemoryMappedComponent
 
+# TODO: wrap the program counter a $ffff
+
 MAX_ADDR = 65535
 ACC_ADDR = -0xacc
 

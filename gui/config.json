@@ -1,0 +1,6 @@
+{
+    "term-args": [
+        "--default-settings",
+        "--profile", "Default Pixelated"
+    ]
+}
