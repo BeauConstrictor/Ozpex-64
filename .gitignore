@@ -2,3 +2,4 @@
 /slot1
 /vasm
 __pycache__
+*.pyc

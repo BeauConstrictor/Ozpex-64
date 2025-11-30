@@ -2,6 +2,7 @@ import os.path
 import argparse
 from sys import stderr
 from time import sleep
+from typing import Iterator
 
 from components.cpu import Cpu
 from components.ram import Ram
@@ -9,12 +10,13 @@ from components.rom import Rom
 from components.timer import Timer
 from components.serial import SerialOutput
 from components.expansion_slot import ExpansionSlot
+from components.mm_component import MemoryMappedComponent
 from components.expansion_slot import RomExpansion, BbRamExpansion
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="ozpex-64",
-        description = "A fictional 8-bit computer and emulator based on the"
+        description = "A fictional 8-bit computer and emulator based on the "
                       "6502",
     )
                          
@@ -32,6 +34,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("-n", "--nocrash",
                         action="store_true",
                         help="disable crashes on unknown opcodes")
+    
+    parser.add_argument("-g", "--gui",
+                        action="store_true",
+                        help="start the ozpex 64 gui (ignores other arguments)")
     
     return parser.parse_args()
 
@@ -55,9 +61,8 @@ def load_slot(literal: str, slot: ExpansionSlot) -> None:
     e = expansions[expansion](arg)
     slot.mount(e.read, e.write)
 
-def main() -> None:
-    args = parse_args()
-    
+def create_machine(rom: str, slot1: str|None, slot2: str|None,
+                   serial: MemoryMappedComponent) -> Cpu:
     # MEMORY MAP:
     # ram:    $0000 -> $7fff  (32,768 B)
     # timer:  $8000 && $8001
@@ -70,42 +75,58 @@ def main() -> None:
     cpu = Cpu({
         "ram": Ram(0x0000, 0x7fff),
         "timer": Timer(0x8000, 0x8001),
-        "serial": SerialOutput(0x8002),
+        "serial": serial(0x8002),
         "slot1": ExpansionSlot(0x8003, 0xa002),
         "slot2": ExpansionSlot(0xa003, 0xc002),
         "rom": Rom(0xc003, 0xffff),
     })
 
-    with open(args.rom, "rb") as f:
-        rom = list(f.read())
-    cpu.mm_components["rom"].load(rom, 0xc003)
+    with open(rom, "rb") as f:
+        rom_data = list(f.read())
+    cpu.mm_components["rom"].load(rom_data, 0xc003)
         
-    if args.slot1: load_slot(args.slot1, cpu.mm_components["slot1"])
-    if args.slot2: load_slot(args.slot2, cpu.mm_components["slot2"])
+    if slot1: load_slot(slot1, cpu.mm_components["slot1"])
+    if slot2: load_slot(slot2, cpu.mm_components["slot2"])
     
     cpu.reset()
     
+    return cpu
+
+def simulate(cpu: Cpu, nocrash: bool, debug: bool) -> Iterator[None]:
     cycles_executed = 0
     
     while True:
         try:
             instr = cpu.execute()
+            yield
                        
         except NotImplementedError as e:    
-            if args.nocrash: continue
+            if nocrash: continue
             print("\n\n\033[31m", end="")
             print(f"6502: {e}, execution aborted.", end="")
             print("\033[0m")
             exit(1)
-        if args.debug:
+        if debug:
             cpu.visualise(instr)
             input()
-            
+
+def main() -> None:
+    args = parse_args()
+    
+    if args.gui:
+        import gui.main
+        gui.main.App().mainloop()
+        return
+    
+    cpu = create_machine(args.rom, args.slot1, args.slot2, SerialOutput)
+    
+    cycle = 0
+    for _ in simulate(cpu, args.nocrash, args.debug):
         # on my computer, this gets ~1MHz
-        cycles_executed += 1
-        if cycles_executed % 200 == 0:
-            cycles_executed = 0
+        if cycle % 200 == 0:
+            cycle = 0
             sleep(0.000001)
+        cycle += 1
 
 if __name__ == "__main__":
     try:
