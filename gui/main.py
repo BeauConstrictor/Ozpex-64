@@ -29,6 +29,20 @@ def resolve_relative_machine_data(machine: dict, base_dir: str) -> None:
             cart_path = os.path.abspath(os.path.join(base_dir, cart_path))
             machine[name] = cart_type + ":" + cart_path
 
+def verify_machine(data: dict) -> bool:
+    keys = {"Name": (str,),
+            "ROM": (str,),
+            "Cartridge A": (str, type(None)),
+            "Cartridge B": (str, type(None))}
+    
+    for k, types in keys.items():
+        if k not in data: return False
+        good_type_found = False
+        for t in types:
+            if isinstance(data[k], t): good_type_found = True
+        if not good_type_found: return False
+    return True
+
 class MachinesList(tk.Frame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -67,6 +81,10 @@ class MachinesList(tk.Frame):
         for m in os.listdir("machines/"):
             with open(f"machines/{m}", "r") as f:
                 machine = json.load(f)
+                if not verify_machine(machine):
+                    messagebox.showerror("Error", "An invalid machine file is "
+                                         "currently managed.")
+                    continue
             self.listbox.insert(tk.END, machine["Name"])
             self.machines.append(machine)
             self.machine_uuids.append(m)
@@ -259,6 +277,10 @@ class App(tk.Tk):
         try:
             with open(filename, "r") as f:
                 data = json.load(f)
+                if not verify_machine(data):
+                    messagebox.showerror("Import Error", "The file contains "
+                                         "invalid machine data.")
+                    return
         except:
             messagebox.showerror("JSON Error", "Could not parse the JSON data.")
             return
@@ -281,6 +303,10 @@ class App(tk.Tk):
         try:
             with open(filename, "r") as f:
                 machine = json.load(f)
+                if not verify_machine(machine):
+                    messagebox.showerror("Open Error", "The file contains "
+                                         "invalid machine data.")
+                    return
         except:
             messagebox.showerror("JSON Error", "Could not parse the JSON data.")
             return
