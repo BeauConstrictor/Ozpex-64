@@ -16,7 +16,8 @@ default_config = {
     "term-args": [
         "--default-settings",
         "--profile", "Default Pixelated"
-    ]
+    ],
+    "stdout-serial": False,
 }
 
 def resolve_relative_machine_data(machine: dict, base_dir: str) -> None:
@@ -141,29 +142,36 @@ class MachineView(tk.Frame):
         self.deselect()
     
     def start_machine(self, config: dict) -> None:
-        
-        crt = shutil.which("cool-retro-term")
-        if not crt:
-            messagebox.showerror("Error", "Ozpex 64 requires Cool Retro Term "
-                                 "to be installed and in the system PATH.")
-            return
-        
-        command = [crt,
-                "--workdir", os.getcwd(),
-                "-T", config["Name"],
-        ]
-        
         try:
             with open("config.json", "r") as f:
                 app_config = json.load(f)
         except:
             messagebox.showwarning("Warning", "Failed to read the config file.")
             app_config = default_config
+            
+        stdout_serial = app_config.get("stdout-serial",
+                                       default_config["stdout-serial"])
         
-        command += app_config.get("term-args", default_config["term-args"])
+        command = []
+        
+        if not stdout_serial:
+            crt = shutil.which("cool-retro-term")
+            if not crt:
+                messagebox.showerror("Error", "Ozpex 64 requires Cool Retro Term "
+                                    "to be installed and in the system PATH.")
+                return
+            
+            command += [crt,
+                    "--workdir", os.getcwd(),
+                    "-T", config["Name"],
+            ]
+            
+            command += app_config.get("term-args", default_config["term-args"])
+            
+            command += ["-e"]
         
         command += [
-                "-e", sys.executable, "../main.py","--rom", config["ROM"]
+                sys.executable, "../main.py","--rom", config["ROM"]
         ]
         
         if config["Cartridge A"] is not None:
