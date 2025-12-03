@@ -1,49 +1,29 @@
 # Ozpex 64
 
-The Ozpex 64 is a fictional 6502-based computer meant to help you experience what programming was like for developers back in the '80s. It is a simple system to develop for, that avoids unnecessary abstractions in an effort to help you understand how hardware works at a low level. If you want to learn how computers really work, the Ozpex 64 should be simple enough to wrap your head around in an afternoon, but complex enough to warrant experimentation.
+A fictional 8-bit retro home-computer built for tinkerers, to be your first step into the world of (truly) low-level development.
 
-## System Details
+![GNU GPL v2.0 License](https://img.shields.io/github/license/BeauConstrictor/ozpex-64?style=flat)
 
-- 32K of RAM from 0x0000 -> 0x7fff
-- Hardware Timer at 0x8000 & 0x8001
-- Serial I/O at 0x8002
-- 8K Cartridge / Hardware Expansion Slot at 0x8003 -> 0xa002
-- 8K Cartridge / Hardware Expansion Slot at 0xa003 -> 0xc002
-- ~16K ROM at 0xc003 -> 0xffff
+This project is broken up into 3 main parts: the emulator, the Logisim implementation and the included software. All of three of these are designed to be compatible with the design for a fictional computer that *could* have existed around the late '70s/early '80s, but never did.
 
-## How to Try it
+## The Emulator
 
-The easiest way to try the Ozpex 64 is through emulation. This repository includes an custom emulator for the system that lets you easily build and run custom software, and includes a monitor program in ROM that helps you experiment directly on the machine.
+Before proceeding, ensure that you have [`cool-retro-term`](https://github.com/Swordfish90/cool-retro-term) installed and in your system `PATH`.
 
-You can also try out Ozpex software in Logisim Evolution, as the Ozpex 64 has been implemented in Logisim using [SolraBizna's 6502 core](github.com/SolraBizna/logi6502).
-
-## Writing Software
-
-The Ozpex 64 is designed for you to write your own software, and there are a few ways to do it. To get started, you can try the included assembler like this:
+To start the emulator, navigate to the root of this repository (after cloning it) and run this command:
 
 ```
-$ python main.py -1 rom:assembler
+$ python3 main.py --gui
 ```
 
-This command will start the emulator with the assembler program in cartridge slot 1. On startup, you will not see the assembler, but the monitor - the program built into ROM. To start the assembler, press `!`. This will immediately start the assembler, and you should see a message like this:
+This will start the emulator in GUI mode, which allows you to more easily manage your *machines*. Machines are files containing the configuration of your Ozpex 64 so that you can quickly load up the same ROM and cartridges. In the sidebar on the left, you will see two example machines that are included with the GUI. Pong is a demake of the original Atari Pong that demonstrates the capabilities of the Ozpex 64 in ~300 lines of assembly. To try out the Pong machine, select its entry in the machine list on the left, and hit the start button at the bottom right of the window.
 
-```
-(mnemonic mode)
-d4e2: 
-```
+## The Logisim Implementation
 
-The memory address you start at is unpredictable, so you can move to a specfic address with the `@` sign. Usually, you will want to move to $0300, as this address is out of the way of RAM that is used my software (the zero page goes in `$00xx`, the stack goes in `$01xx` and the input buffer usually goes in `$02xx`). If you want to save your program, you can go put a BBRAM in cartridge slot 2, and go to address `$a003`, to write code directly into the cartridge. To mount a BBRAM, use this command:
+The Ozpex 64 has been implemented in the free digital logic design software [Logisim Evolution](https://github.com/logisim-evolution/logisim-evolution). You can find this in the `logisim/` directory of this repo. Once you have opened the `.circ` file in Logisim Evolution, you can set the clock speed to whatever you desire and start the simulation. Their are some cartridges included which you can easily insert and the ROM is prepopulated with the monitor program.
 
-```
-$ python main.py 1 rom:assembler -2 bbram:myprograms
-```
+## The Software
 
-When you are in the mnemonic mode, you can type out assembly instructions and have them immediately written into memory upon hitting enter. While you can write programs this way, there is no support for labels, so must programs you write will simply be scripts that wrap subroutines included in ROM. In order to write more complex programs, you will want to assemble them using a modern tool such as [vasm](http://www.compilers.de/vasm.html). This repository includes a build script that will automatically assemble all programs in the `./programs` directory, and put the output in `./roms`, so that you can easily load your program as a cartridge. Also, an 'api' fill will be saved into the `./apis` directory, containing addresses of subroutines and variables used by the program.
+This repository also includes some simple software that you can run either in-emulator or from Logisim. You can find pre-built binaries of these programs in the `roms/` directory and the corresponding assembly source files in the `programs/` directory.
 
-## The Manual
-
-If you want to dive deeper into the included software, or try to create your own, I would recommend reading the [manual](https://github.com/BeauConstrictor/Ozpex-64/blob/main/MANUAL.md), as it includes a much more in-depth guide on both of these things.
-
-## Contributing
-
-You are welcome to create your own tools and programs for the Ozpex 64, and I would love to see them, but please avoid making a PR to add them to my repo. Bug reports are also welcome regarding the emulator, but I accept that my assembly programs will inevitably be very buggy, so I would appreciate if you simply *ignore* any bugs you find in those.
+For more complex software to try, or to read through and learn from (although I can't vouch for my assembly skills), see [Ozpex-DOS](https://github.com/logisim-evolution/logisim-evolution). This is a complete disk-operating-system for the computer that will eventually have a complete development workflow so that you can develop full software right on the machine.
