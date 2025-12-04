@@ -26,4 +26,4 @@ The Ozpex 64 has been implemented in the free digital logic design software [Log
 
 This repository also includes some simple software that you can run either in-emulator or from Logisim. You can find pre-built binaries of these programs in the `roms/` directory and the corresponding assembly source files in the `programs/` directory.
 
-For more complex software to try, or to read through and learn from (although I can't vouch for my assembly skills), see [Ozpex-DOS](https://github.com/logisim-evolution/logisim-evolution). This is a complete disk-operating-system for the computer that will eventually have a complete development workflow so that you can develop full software right on the machine.
+For more complex software to try, or to read through and learn from (although I can't vouch for my assembly skills), see [Ozpex-DOS](https://github.com/BeauConstrictor/Ozpex-DOS). This is a complete disk-operating-system for the computer that will eventually have a complete development workflow so that you can develop full software right on the machine.
