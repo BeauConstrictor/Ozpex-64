@@ -4,7 +4,7 @@ A fictional 8-bit retro home-computer built for tinkerers, as your first step in
 
 ![GNU GPL v2.0 License](https://img.shields.io/github/license/BeauConstrictor/ozpex-64?style=flat)
 
-This project is broken up into 3 main parts: the emulator, the Logisim implementation and the included software. All of three of these are made to be compatible with the design for a fictional computer that *could* have existed around the late '70s/early '80s, but never did.
+This project is broken up into 3 main parts: the emulator, the Logisim implementation and the included software. All three of these are made to be compatible with the design for a fictional computer that *could* have existed around the late '70s/early '80s, but never did.
 
 ## The Emulator
 
@@ -20,7 +20,7 @@ This will start the emulator in GUI mode, which allows you to more easily manage
 
 ## The Logisim Implementation
 
-The Ozpex 64 has been implemented in the free digital logic design software [Logisim Evolution](https://github.com/logisim-evolution/logisim-evolution). You can find this in the `logisim/` directory of this repo. Once you have opened the `.circ` file in Logisim Evolution, you can set the clock speed to whatever you desire and start the simulation. There are some cartridges included which you can easily insert and the ROM is prepopulated with the monitor program.
+The Ozpex 64 has been implemented in the free digital logic design software [Logisim Evolution](https://github.com/logisim-evolution/logisim-evolution). You can find this in the `logisim/` directory of this repo. Once you have opened the `.circ` file in Logisim Evolution, you can set the clock speed to whatever you desire and start the simulation. There are some cartridges included which you can easily insert. The ROM is prepopulated with the monitor program.
 
 ## The Software
 
