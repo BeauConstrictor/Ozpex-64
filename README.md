@@ -4,6 +4,8 @@ A fictional 8-bit retro home-computer built for tinkerers, as your first step in
 
 ![GNU GPL v2.0 License](https://img.shields.io/github/license/BeauConstrictor/ozpex-64?style=flat)
 
+<img src="/assets/o64-pong.png" alt="Screenshot of pong" width="300" />
+
 This project is broken up into 3 main parts: the emulator, the Logisim implementation and the included software. All three of these are made to be compatible with the design for a fictional computer that *could* have existed around the late '70s/early '80s, but never did.
 
 ## The Emulator
